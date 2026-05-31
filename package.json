@@ -10,11 +10,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@sentry/nextjs": "^10.55.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.46.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.460.0",
     "next": "^15.5.18",
+    "posthog-js": "^1.376.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "resend": "^6.12.3",
