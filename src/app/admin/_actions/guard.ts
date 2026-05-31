@@ -20,8 +20,10 @@ export async function requireOwner() {
   const sb = await createSupabaseServerClient();
   const { data: { user } } = await sb.auth.getUser();
   if (!user) redirect("/admin/login");
+  // Fail closed: a configured project with no owner email set must deny, not
+  // grant admin to any authenticated user (in case signup is ever enabled).
   const ownerEmail = process.env.ADMIN_OWNER_EMAIL?.toLowerCase();
-  if (ownerEmail && user.email?.toLowerCase() !== ownerEmail) {
+  if (!ownerEmail || user.email?.toLowerCase() !== ownerEmail) {
     redirect("/admin/login?error=unauthorized");
   }
   return user;

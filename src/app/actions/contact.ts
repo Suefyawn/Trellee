@@ -24,6 +24,15 @@ export async function submitContact(input: ContactInput): Promise<ContactResult>
     return { ok: false, error: "Please enter a valid email." };
   if (!input.message?.trim() || input.message.trim().length < 10)
     return { ok: false, error: "A few more words about the project, please." };
+  // Upper bounds — reject oversized payloads from bots/abuse before they hit the DB.
+  if (
+    input.name.length > 200 ||
+    input.email.length > 320 ||
+    (input.company?.length ?? 0) > 200 ||
+    (input.budget?.length ?? 0) > 100 ||
+    (input.message?.length ?? 0) > 5000
+  )
+    return { ok: false, error: "One of the fields is too long." };
 
   const supabaseConfigured =
     !!process.env.NEXT_PUBLIC_SUPABASE_URL &&

@@ -24,6 +24,15 @@ export async function submitBooking(input: BookingInput): Promise<BookingResult>
   if (!input.email?.trim()) return { ok: false, error: "Email is required." };
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(input.email))
     return { ok: false, error: "Please enter a valid email." };
+  // Upper bounds — reject oversized payloads from bots/abuse before they hit the DB.
+  if (
+    input.name.length > 200 ||
+    input.email.length > 320 ||
+    (input.company?.length ?? 0) > 200 ||
+    (input.phone?.length ?? 0) > 50 ||
+    (input.notes?.length ?? 0) > 5000
+  )
+    return { ok: false, error: "One of the fields is too long." };
 
   const supabaseConfigured =
     !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
