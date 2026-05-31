@@ -1,0 +1,700 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Trellee — design tokens
+   Brand: dark surfaces + teal-green accent (OKLCH hue 160).
+   Type: Cabinet Grotesk used site-wide for body + display (matches the
+   logo wordmark), with Geist Mono reserved for genuine monospace use
+   (timestamps, code snippets, badges, mono-tags).
+   ============================================================ */
+
+@theme {
+  --color-bg: oklch(0.06 0.005 258);
+  --color-surface: oklch(0.1 0.008 258);
+  --color-surface-2: oklch(0.14 0.01 258);
+  --color-surface-3: oklch(0.18 0.01 258);
+  --color-border: oklch(0.22 0.01 258);
+  --color-border-strong: oklch(0.32 0.01 258);
+  --color-fg: oklch(0.96 0.005 258);
+  --color-muted: oklch(0.65 0.01 258);
+  --color-muted-strong: oklch(0.78 0.005 258);
+
+  --color-brand-300: oklch(0.82 0.16 160);
+  --color-brand-400: oklch(0.74 0.18 160);
+  --color-brand-500: oklch(0.65 0.19 160);
+  --color-brand-600: oklch(0.55 0.19 160);
+  --color-brand-700: oklch(0.45 0.18 160);
+
+  --color-success: oklch(0.72 0.18 145);
+  --color-warning: oklch(0.78 0.18 75);
+  --color-danger: oklch(0.65 0.22 25);
+
+  /* One sans family everywhere (Cabinet Grotesk). --font-display is kept as
+     an alias so the existing utility classes keep working; both resolve to
+     the same font, just used at different weights/sizes. */
+  --font-display: "Cabinet Grotesk", system-ui, sans-serif;
+  --font-sans: "Cabinet Grotesk", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 18px;
+  --radius-2xl: 28px;
+
+  --shadow-glow: 0 8px 24px -8px oklch(0.65 0.19 160 / 0.4);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* Cabinet Grotesk's stylistic alternates (rounded variants, alt 'a' etc.) */
+    font-feature-settings: "ss01", "ss02";
+    overflow-x: hidden;
+  }
+  ::selection {
+    background: oklch(0.65 0.19 160 / 0.4);
+    color: var(--color-fg);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+/* ---- Custom cursor (desktop, hover-capable mice only) ---- */
+.has-custom-cursor,
+.has-custom-cursor *,
+.has-custom-cursor a,
+.has-custom-cursor button {
+  /* Keep native cursor as a fallback for users with assistive setups (won't
+     affect anything in the headless browser test, but a no-op there). The
+     custom cursor is purely additive. */
+  cursor: none;
+}
+/* Keep native text cursors over inputs so users can see selection */
+.has-custom-cursor input,
+.has-custom-cursor textarea,
+.has-custom-cursor [contenteditable] {
+  cursor: text;
+}
+
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 9999;
+  /* The dot/ring are positioned via translate; subtract half their size so
+     they're centered on the pointer location. */
+  margin-left: 0;
+  margin-top: 0;
+  transition: opacity 0.2s ease;
+}
+.cursor-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-brand-500);
+  margin-left: -3px;
+  margin-top: -3px;
+  transition:
+    opacity 0.2s ease,
+    transform 0.05s linear;
+}
+.cursor-ring {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid oklch(0.65 0.19 160 / 0.55);
+  margin-left: -16px;
+  margin-top: -16px;
+  transition:
+    opacity 0.2s ease,
+    width 0.18s cubic-bezier(0.2, 0.6, 0.2, 1),
+    height 0.18s cubic-bezier(0.2, 0.6, 0.2, 1),
+    border-color 0.18s ease,
+    background 0.18s ease,
+    margin 0.18s cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+/*
+  !important is needed here because Tailwind v4's preflight / reset styles
+  end up in a higher cascade layer than user CSS at the top level. The
+  preflight's universal `*` rules don't include width directly, but layer
+  ordering means our unlayered .cursor-ring--hover loses to layered rules
+  unless we escape via !important.
+*/
+.cursor-ring--hover {
+  width: 56px !important;
+  height: 56px !important;
+  margin-left: -28px !important;
+  margin-top: -28px !important;
+  background: oklch(0.65 0.19 160 / 0.1);
+  border-color: oklch(0.65 0.19 160 / 0.7);
+}
+.cursor-ring--press {
+  width: 24px !important;
+  height: 24px !important;
+  margin-left: -12px !important;
+  margin-top: -12px !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cursor-dot,
+  .cursor-ring {
+    display: none !important;
+  }
+}
+
+/* Skip-to-content link — kept outside @layer so Tailwind utilities can't
+   override it. Visually hidden until keyboard-focused. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 100;
+}
+.skip-link:focus,
+.skip-link:focus-visible {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  width: auto;
+  height: auto;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: var(--color-fg);
+  color: var(--color-bg);
+  font-weight: 500;
+  box-shadow: 0 8px 24px -8px oklch(0.65 0.19 160 / 0.4);
+  outline: none;
+}
+
+@layer components {
+  .font-display {
+    font-family: var(--font-display);
+    font-feature-settings: "ss01", "ss02";
+  }
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  /* ---------- Type scale ---------- */
+  .t-display-xl {
+    font-family: var(--font-display);
+    font-size: clamp(3.5rem, 8vw, 7.5rem);
+    letter-spacing: -0.04em;
+    line-height: 0.92;
+    font-weight: 600;
+  }
+  .t-display-l {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    letter-spacing: -0.03em;
+    line-height: 1;
+    font-weight: 600;
+  }
+  .t-heading-xl {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 3.5vw, 3rem);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    font-weight: 600;
+  }
+  .t-heading-l {
+    font-size: 1.5rem;
+    line-height: 1.25;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .t-body-l {
+    font-size: 1.125rem;
+    line-height: 1.6;
+  }
+  .t-body {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  .t-small {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  .t-mono {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.45;
+  }
+
+  /* ---------- Mono tag (section labels) ---------- */
+  .mono-tag {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .mono-tag::before {
+    content: "";
+    width: 18px;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.5;
+  }
+
+  /* ---------- Section divider ---------- */
+  .section-rule {
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      var(--color-border) 15%,
+      var(--color-border) 85%,
+      transparent
+    );
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.125rem;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 0.9375rem;
+    transition: all 0.2s cubic-bezier(0.2, 0.6, 0.2, 1);
+    border: 1px solid transparent;
+    cursor: pointer;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--color-fg);
+    color: #000;
+  }
+  .btn-primary:hover {
+    background: oklch(0.88 0.005 258);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px -8px oklch(0.96 0.005 258 / 0.35);
+  }
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+  .btn-secondary {
+    background: var(--color-surface-2);
+    color: var(--color-fg);
+    border-color: var(--color-border);
+  }
+  .btn-secondary:hover {
+    background: oklch(0.18 0.01 258);
+    border-color: var(--color-border-strong);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--color-fg);
+  }
+  .btn-ghost:hover {
+    background: var(--color-surface-2);
+  }
+  .btn-brand {
+    background: var(--color-brand-500);
+    color: oklch(0.1 0.02 160);
+    font-weight: 600;
+  }
+  .btn-brand:hover {
+    background: var(--color-brand-400);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-glow);
+  }
+  .btn-sm {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+  .btn-lg {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+  .btn-magnetic {
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-magnetic::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      220px circle at var(--mx, 50%) var(--my, 50%),
+      oklch(0.65 0.19 160 / 0.5),
+      transparent 50%
+    );
+    opacity: 0;
+    transition: opacity 0.25s;
+    pointer-events: none;
+  }
+  .btn-magnetic:hover::after {
+    opacity: 1;
+  }
+  .btn-magnetic > span {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ---------- Inputs ---------- */
+  .input,
+  .textarea,
+  .select {
+    width: 100%;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    color: var(--color-fg);
+    padding: 0.75rem 0.875rem;
+    font-size: 0.9375rem;
+    font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  }
+  .input::placeholder,
+  .textarea::placeholder {
+    color: oklch(0.5 0.01 258);
+  }
+  .input:hover,
+  .textarea:hover,
+  .select:hover {
+    border-color: var(--color-border-strong);
+  }
+  .input:focus,
+  .textarea:focus,
+  .select:focus {
+    outline: none;
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 3px oklch(0.65 0.19 160 / 0.18);
+    background: var(--color-surface-2);
+  }
+  .input.error,
+  .textarea.error {
+    border-color: var(--color-danger);
+  }
+
+  .check {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 5px;
+    background: var(--color-surface);
+    display: inline-grid;
+    place-items: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .check:hover {
+    border-color: var(--color-brand-500);
+  }
+  .check:checked {
+    background: var(--color-brand-500);
+    border-color: var(--color-brand-500);
+  }
+  .check:checked::after {
+    content: "";
+    width: 10px;
+    height: 6px;
+    border-left: 2px solid #000;
+    border-bottom: 2px solid #000;
+    transform: rotate(-45deg) translate(1px, -1px);
+  }
+
+  /* ---------- Badges ---------- */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 0.75rem;
+    line-height: 1;
+    font-family: var(--font-mono);
+    color: var(--color-muted);
+  }
+  .badge-brand {
+    color: oklch(0.82 0.16 160);
+    border-color: oklch(0.4 0.16 160);
+    background: oklch(0.65 0.19 160 / 0.1);
+  }
+  .badge-success {
+    color: oklch(0.85 0.15 145);
+    border-color: oklch(0.42 0.15 145);
+    background: oklch(0.72 0.18 145 / 0.1);
+  }
+  .badge-dot::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .badge-pulse::before {
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
+    }
+  }
+
+  /* ---------- Surfaces ---------- */
+  .surface-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 18px;
+  }
+  .bento-tile {
+    position: relative;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 18px;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+  .bento-tile::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      500px circle at var(--mx, 50%) var(--my, 0%),
+      oklch(0.65 0.19 160 / 0.12),
+      transparent 45%
+    );
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .bento-tile:hover {
+    border-color: var(--color-border-strong);
+  }
+  .bento-tile:hover::before {
+    opacity: 1;
+  }
+
+  /* ---------- Logo ---------- */
+  .logo-mark {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.125rem;
+    letter-spacing: -0.05em;
+    line-height: 1;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 1px;
+  }
+  .logo-mark .dot {
+    color: var(--color-brand-500);
+  }
+
+  /* ---------- Mesh gradient hero background ---------- */
+  .mesh {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(900px 500px at 15% 10%, oklch(0.65 0.19 160 / 0.2), transparent 55%),
+      radial-gradient(700px 500px at 90% 80%, oklch(0.55 0.17 160 / 0.1), transparent 60%);
+    filter: blur(20px);
+  }
+
+  .grid-bg {
+    background-image: linear-gradient(
+        to right,
+        var(--color-border) 1px,
+        transparent 1px
+      ),
+      linear-gradient(to bottom, var(--color-border) 1px, transparent 1px);
+    background-size: 80px 80px;
+    background-position: -1px -1px;
+    mask-image: radial-gradient(
+      ellipse 90% 70% at 50% 30%,
+      #000 30%,
+      transparent 75%
+    );
+  }
+
+  /* ---------- Marquee ---------- */
+  .marquee {
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  }
+  .marquee-track {
+    display: flex;
+    gap: 3.5rem;
+    width: max-content;
+    animation: marquee 50s linear infinite;
+    align-items: center;
+  }
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* ---------- Code window ---------- */
+  .code-window {
+    background: oklch(0.08 0.008 258);
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    line-height: 1.65;
+  }
+  .code-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 0.875rem;
+    background: var(--color-surface-2);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .code-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+  }
+  .code-body {
+    padding: 0.875rem 1rem;
+  }
+  .tok-key {
+    color: oklch(0.78 0.16 160);
+  }
+  .tok-str {
+    color: oklch(0.78 0.16 145);
+  }
+  .tok-num {
+    color: oklch(0.82 0.16 75);
+  }
+  .tok-com {
+    color: oklch(0.5 0.01 258);
+    font-style: italic;
+  }
+  .tok-fn {
+    color: oklch(0.85 0.15 320);
+  }
+  .tok-pun {
+    color: oklch(0.65 0.01 258);
+  }
+
+  /* ---------- Process step number ---------- */
+  .step-num {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(6rem, 14vw, 13rem);
+    line-height: 0.85;
+    letter-spacing: -0.06em;
+    background: linear-gradient(
+      180deg,
+      oklch(0.96 0.005 258) 0%,
+      oklch(0.3 0.005 258) 90%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* ---------- Live activity dot ---------- */
+  .live-dot {
+    position: relative;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-brand-500);
+  }
+  .live-dot::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 1px solid var(--color-brand-500);
+    animation: pulse-ring 2s ease-out infinite;
+  }
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(0.5);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1.5);
+      opacity: 0;
+    }
+  }
+
+  /* ---------- Reveal on scroll ---------- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.7s cubic-bezier(0.2, 0.6, 0.2, 1),
+      transform 0.7s cubic-bezier(0.2, 0.6, 0.2, 1);
+  }
+  .reveal.in {
+    opacity: 1;
+    transform: none;
+  }
+  .reveal-d1 {
+    transition-delay: 0.08s;
+  }
+  .reveal-d2 {
+    transition-delay: 0.16s;
+  }
+  .reveal-d3 {
+    transition-delay: 0.24s;
+  }
+
+  /* ---------- Ticker ---------- */
+  .ticker {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+    min-width: 1ch;
+  }
+  .ticker-track {
+    display: inline-flex;
+    flex-direction: column;
+    transition: transform 0.55s cubic-bezier(0.6, 0.2, 0.1, 1);
+  }
+  .ticker-track > span {
+    line-height: inherit;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
