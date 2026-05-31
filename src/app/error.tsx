@@ -21,7 +21,6 @@ export default function GlobalError({
     // (Sentry, console, etc.). The digest is set by Next on server errors so
     // ops can correlate it with the matching server log entry.
     if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
       console.error("[GlobalError]", error);
     }
   }, [error]);
