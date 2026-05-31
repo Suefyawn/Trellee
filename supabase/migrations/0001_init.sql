@@ -71,7 +71,7 @@ create table if not exists public.site_settings (
   updated_at  timestamptz not null default now()
 );
 
-create trigger site_settings_updated
+create or replace trigger site_settings_updated
   before update on public.site_settings
   for each row execute function public.set_updated_at();
 
@@ -104,7 +104,7 @@ create table if not exists public.services (
   updated_at      timestamptz not null default now()
 );
 
-create trigger services_updated
+create or replace trigger services_updated
   before update on public.services
   for each row execute function public.set_updated_at();
 
@@ -130,7 +130,7 @@ create table if not exists public.pricing_tiers (
   updated_at    timestamptz not null default now()
 );
 
-create trigger pricing_tiers_updated
+create or replace trigger pricing_tiers_updated
   before update on public.pricing_tiers
   for each row execute function public.set_updated_at();
 
@@ -150,7 +150,7 @@ create table if not exists public.faqs (
   updated_at  timestamptz not null default now()
 );
 
-create trigger faqs_updated
+create or replace trigger faqs_updated
   before update on public.faqs
   for each row execute function public.set_updated_at();
 
@@ -170,7 +170,7 @@ create table if not exists public.clients (
   updated_at  timestamptz not null default now()
 );
 
-create trigger clients_updated
+create or replace trigger clients_updated
   before update on public.clients
   for each row execute function public.set_updated_at();
 
@@ -204,7 +204,7 @@ create table if not exists public.projects (
   updated_at      timestamptz not null default now()
 );
 
-create trigger projects_updated
+create or replace trigger projects_updated
   before update on public.projects
   for each row execute function public.set_updated_at();
 
@@ -234,7 +234,7 @@ create table if not exists public.reviews (
   updated_at    timestamptz not null default now()
 );
 
-create trigger reviews_updated
+create or replace trigger reviews_updated
   before update on public.reviews
   for each row execute function public.set_updated_at();
 
@@ -256,7 +256,7 @@ create table if not exists public.process_steps (
   updated_at    timestamptz not null default now()
 );
 
-create trigger process_steps_updated
+create or replace trigger process_steps_updated
   before update on public.process_steps
   for each row execute function public.set_updated_at();
 
@@ -275,7 +275,7 @@ create table if not exists public.values (
   updated_at    timestamptz not null default now()
 );
 
-create trigger values_updated
+create or replace trigger values_updated
   before update on public.values
   for each row execute function public.set_updated_at();
 
@@ -295,7 +295,7 @@ create table if not exists public.team_members (
   updated_at    timestamptz not null default now()
 );
 
-create trigger team_members_updated
+create or replace trigger team_members_updated
   before update on public.team_members
   for each row execute function public.set_updated_at();
 
@@ -337,7 +337,7 @@ create table if not exists public.blog_categories (
   updated_at  timestamptz not null default now()
 );
 
-create trigger blog_categories_updated
+create or replace trigger blog_categories_updated
   before update on public.blog_categories
   for each row execute function public.set_updated_at();
 
@@ -363,7 +363,7 @@ create table if not exists public.blog_posts (
   updated_at    timestamptz not null default now()
 );
 
-create trigger blog_posts_updated
+create or replace trigger blog_posts_updated
   before update on public.blog_posts
   for each row execute function public.set_updated_at();
 
@@ -389,7 +389,7 @@ create table if not exists public.bookings (
   updated_at    timestamptz not null default now()
 );
 
-create trigger bookings_updated
+create or replace trigger bookings_updated
   before update on public.bookings
   for each row execute function public.set_updated_at();
 
@@ -412,7 +412,7 @@ create table if not exists public.contact_submissions (
   updated_at    timestamptz not null default now()
 );
 
-create trigger contact_submissions_updated
+create or replace trigger contact_submissions_updated
   before update on public.contact_submissions
   for each row execute function public.set_updated_at();
 
@@ -445,33 +445,49 @@ alter table public.bookings             enable row level security;
 alter table public.contact_submissions  enable row level security;
 
 -- Public read access on marketing tables
+drop policy if exists "public read site_settings"   on public.site_settings;
 create policy "public read site_settings"   on public.site_settings   for select using (true);
+drop policy if exists "public read services"        on public.services;
 create policy "public read services"        on public.services        for select using (true);
+drop policy if exists "public read pricing_tiers"   on public.pricing_tiers;
 create policy "public read pricing_tiers"   on public.pricing_tiers   for select using (true);
+drop policy if exists "public read faqs"            on public.faqs;
 create policy "public read faqs"            on public.faqs            for select using (true);
+drop policy if exists "public read clients"         on public.clients;
 create policy "public read clients"         on public.clients         for select using (true);
+drop policy if exists "public read process_steps"   on public.process_steps;
 create policy "public read process_steps"   on public.process_steps   for select using (true);
+drop policy if exists "public read values"          on public.values;
 create policy "public read values"          on public.values          for select using (true);
+drop policy if exists "public read team_members"    on public.team_members;
 create policy "public read team_members"    on public.team_members    for select using (active = true);
+drop policy if exists "public read activity_feed"   on public.activity_feed;
 create policy "public read activity_feed"   on public.activity_feed   for select using (true);
+drop policy if exists "public read social_links"    on public.social_links;
 create policy "public read social_links"    on public.social_links    for select using (true);
+drop policy if exists "public read blog_categories" on public.blog_categories;
 create policy "public read blog_categories" on public.blog_categories for select using (true);
+drop policy if exists "public read reviews"         on public.reviews;
 create policy "public read reviews"         on public.reviews         for select using (true);
 
 -- Published-only public reads
+drop policy if exists "public read published projects" on public.projects;
 create policy "public read published projects"
   on public.projects for select
   using (status = 'published');
 
+drop policy if exists "public read published blog_posts" on public.blog_posts;
 create policy "public read published blog_posts"
   on public.blog_posts for select
   using (status = 'published' and published_at <= now());
 
 -- Anonymous form submissions
+drop policy if exists "anyone can submit a booking" on public.bookings;
 create policy "anyone can submit a booking"
   on public.bookings for insert
   with check (true);
 
+drop policy if exists "anyone can submit contact form" on public.contact_submissions;
 create policy "anyone can submit contact form"
   on public.contact_submissions for insert
   with check (true);
@@ -492,36 +508,46 @@ insert into storage.buckets (id, name, public)
   on conflict (id) do nothing;
 
 -- Public read on both buckets
+drop policy if exists "public read media" on storage.objects;
 create policy "public read media"
   on storage.objects for select
   using (bucket_id = 'media');
 
+drop policy if exists "public read videos" on storage.objects;
 create policy "public read videos"
   on storage.objects for select
   using (bucket_id = 'videos');
 
 -- Authenticated users can write — admin server actions use service role anyway,
 -- but this allows direct uploads from the admin UI via the user's session.
+drop policy if exists "auth write media" on storage.objects;
 create policy "auth write media"
   on storage.objects for insert
   with check (bucket_id = 'media' and auth.role() = 'authenticated');
 
+drop policy if exists "auth update media" on storage.objects;
 create policy "auth update media"
   on storage.objects for update
-  using (bucket_id = 'media' and auth.role() = 'authenticated');
+  using (bucket_id = 'media' and auth.role() = 'authenticated')
+  with check (bucket_id = 'media' and auth.role() = 'authenticated');
 
+drop policy if exists "auth delete media" on storage.objects;
 create policy "auth delete media"
   on storage.objects for delete
   using (bucket_id = 'media' and auth.role() = 'authenticated');
 
+drop policy if exists "auth write videos" on storage.objects;
 create policy "auth write videos"
   on storage.objects for insert
   with check (bucket_id = 'videos' and auth.role() = 'authenticated');
 
+drop policy if exists "auth update videos" on storage.objects;
 create policy "auth update videos"
   on storage.objects for update
-  using (bucket_id = 'videos' and auth.role() = 'authenticated');
+  using (bucket_id = 'videos' and auth.role() = 'authenticated')
+  with check (bucket_id = 'videos' and auth.role() = 'authenticated');
 
+drop policy if exists "auth delete videos" on storage.objects;
 create policy "auth delete videos"
   on storage.objects for delete
   using (bucket_id = 'videos' and auth.role() = 'authenticated');

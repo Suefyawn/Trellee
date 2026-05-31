@@ -50,12 +50,15 @@ Every variable the production deploy needs, and where its value comes from.
 
 1. Create project `trellee` in the **US East** region (audience is Miami; keep
    latency low). Save the generated DB password.
-2. Apply the schema: run `supabase/migrations/0001_init.sql` (527 lines — all 16
-   tables, RLS policies, storage buckets/policies).
-3. *(Optional, recommended for first smoke test)* run `supabase/seed.sql` to
+2. Apply the schema: run `supabase/migrations/0001_init.sql` (all 16 tables, RLS
+   policies, triggers, storage buckets/policies). It's idempotent — safe to
+   re-run, and safe to run even if you pre-created the `media`/`videos` buckets
+   in the UI first.
+3. Verify: run `supabase/verify.sql` — every row should read **PASS** (16 tables,
+   RLS on all of them, no anon SELECT on the lead tables, both buckets public,
+   the singleton settings row).
+4. *(Optional, recommended for first smoke test)* run `supabase/seed.sql` to
    load sample content, then replace with real content via `/admin` later.
-4. Confirm storage buckets `media` and `videos` exist and are public (the
-   migration creates them; verify).
 5. Create the owner auth user with `ADMIN_OWNER_EMAIL`; set a password.
 6. **Lock down signup**: Auth → Providers → disable public email signup (the
    admin gate is single-owner; no self-serve accounts should exist).
