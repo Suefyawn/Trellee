@@ -2,6 +2,7 @@
 
 import { sendContactEmails } from "@/lib/email";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
+import { validateContact } from "@/lib/validation";
 
 export type ContactInput = {
   name: string;
@@ -18,21 +19,8 @@ export type ContactResult =
   | { ok: false; error: string };
 
 export async function submitContact(input: ContactInput): Promise<ContactResult> {
-  if (!input.name?.trim()) return { ok: false, error: "Name is required." };
-  if (!input.email?.trim()) return { ok: false, error: "Email is required." };
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(input.email))
-    return { ok: false, error: "Please enter a valid email." };
-  if (!input.message?.trim() || input.message.trim().length < 10)
-    return { ok: false, error: "A few more words about the project, please." };
-  // Upper bounds — reject oversized payloads from bots/abuse before they hit the DB.
-  if (
-    input.name.length > 200 ||
-    input.email.length > 320 ||
-    (input.company?.length ?? 0) > 200 ||
-    (input.budget?.length ?? 0) > 100 ||
-    (input.message?.length ?? 0) > 5000
-  )
-    return { ok: false, error: "One of the fields is too long." };
+  const validationError = validateContact(input);
+  if (validationError) return { ok: false, error: validationError };
 
   const supabaseConfigured =
     !!process.env.NEXT_PUBLIC_SUPABASE_URL &&

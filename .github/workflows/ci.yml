@@ -31,6 +31,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Test
+        run: npm test
+
       # Builds against demo data — the CMS layer falls back gracefully when no
       # Supabase/Resend/Sentry/PostHog env is present, so CI needs no secrets.
       - name: Build
