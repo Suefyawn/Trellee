@@ -15,6 +15,13 @@ import { HeroTicker } from "@/components/site/hero-ticker";
 import { Reveal } from "@/components/site/reveal";
 import { ServiceIcon } from "@/components/site/service-icon";
 
+// Title + description inherit the site-wide defaults from the root layout; we
+// only pin the canonical URL here so the homepage isn't deduped against any
+// query-string variants.
+export const metadata = {
+  alternates: { canonical: "/" },
+};
+
 export default async function HomePage() {
   const [settings, services, projects, reviews, processSteps, activity, clients] =
     await Promise.all([

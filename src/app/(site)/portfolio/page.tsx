@@ -8,6 +8,7 @@ export const metadata = {
   title: "Work",
   description:
     "Recent ships. Filter by discipline — design, dev, mobile, CRMs, AI, growth.",
+  alternates: { canonical: "/portfolio" },
 };
 
 export default async function PortfolioPage({

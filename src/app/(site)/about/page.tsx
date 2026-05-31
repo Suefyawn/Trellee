@@ -11,6 +11,7 @@ import { ServiceIcon } from "@/components/site/service-icon";
 export const metadata = {
   title: "About",
   description: "Who we are, why we built Trellee, and how we work.",
+  alternates: { canonical: "/about" },
 };
 
 export default async function AboutPage() {

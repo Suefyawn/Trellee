@@ -7,6 +7,7 @@ import { FAQAccordion } from "@/components/site/faq-accordion";
 export const metadata = {
   title: "Contact",
   description: "Send a brief or book a call. We read every message.",
+  alternates: { canonical: "/contact" },
 };
 
 export default async function ContactPage() {
