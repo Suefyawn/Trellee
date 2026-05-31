@@ -104,6 +104,10 @@ Every variable the production deploy needs, and where its value comes from.
 4. Preview smoke test (no DNS yet): sign into `/admin/login`; submit a test
    booking + contact → rows land in Supabase, emails fire, Sentry/PostHog
    receive events.
+5. **CSP**: with the preview open, check the browser console for
+   `Content-Security-Policy-Report-Only` violations. If there are none across
+   the main routes (and after enabling Sentry/PostHog), set `CSP_ENFORCE=true`
+   and redeploy to switch the policy from report-only to enforcing.
 
 ## Step 6 — DNS cutover (the only irreversible, outward-facing step)
 
