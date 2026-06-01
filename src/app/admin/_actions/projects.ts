@@ -88,3 +88,20 @@ export async function deleteProject(id: string) {
   revalidatePath("/");
   return { ok: true as const };
 }
+
+/** Persist a new ordering: each id's featured_order becomes its array index. */
+export async function reorderProjects(ids: string[]) {
+  await requireOwner();
+  const sb = createSupabaseAdminClient();
+  for (let i = 0; i < ids.length; i++) {
+    const { error } = await sb
+      .from("projects")
+      .update({ featured_order: i })
+      .eq("id", ids[i]);
+    if (error) return { ok: false as const, error: error.message };
+  }
+  revalidatePath("/admin/projects");
+  revalidatePath("/portfolio");
+  revalidatePath("/");
+  return { ok: true as const };
+}

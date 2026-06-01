@@ -33,6 +33,7 @@ export const deleteFAQAction = faqs.deleteFAQ;
 
 export const upsertProjectAction = projects.upsertProject;
 export const deleteProjectAction = projects.deleteProject;
+export const reorderProjectsAction = projects.reorderProjects;
 
 export const upsertReviewAction = reviews.upsertReview;
 export const deleteReviewAction = reviews.deleteReview;
