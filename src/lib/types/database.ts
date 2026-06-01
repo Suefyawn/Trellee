@@ -240,6 +240,31 @@ export type ContactSubmissionRow = {
   updated_at: string;
 };
 
+export type InvoiceLineItem = {
+  description: string;
+  quantity: number;
+  unit_price: number;
+};
+
+export type InvoiceRow = {
+  id: string;
+  number: string;
+  status: "draft" | "sent" | "paid" | "void";
+  client_name: string;
+  client_email: string | null;
+  client_company: string | null;
+  client_address: string | null;
+  issue_date: string;
+  due_date: string | null;
+  currency: string;
+  line_items: InvoiceLineItem[];
+  tax_rate: number;
+  notes: string | null;
+  total: number;
+  created_at: string;
+  updated_at: string;
+};
+
 export type SiteSettingsRow = {
   id: 1;
   company_name: string;
@@ -298,6 +323,7 @@ export type Database = {
       blog_posts: SelectInsertUpdate<BlogPostRow>;
       bookings: SelectInsertUpdate<BookingRow>;
       contact_submissions: SelectInsertUpdate<ContactSubmissionRow>;
+      invoices: SelectInsertUpdate<InvoiceRow>;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
