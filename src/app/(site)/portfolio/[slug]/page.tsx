@@ -9,6 +9,7 @@ import {
 } from "@/lib/cms";
 import { Reveal } from "@/components/site/reveal";
 import { VideoReview } from "@/components/site/video-review";
+import { JsonLd } from "@/components/seo/json-ld";
 
 export async function generateStaticParams() {
   const projects = await getProjects();
@@ -56,8 +57,22 @@ export default async function CaseStudyPage({
     {},
   );
 
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://trellee.vercel.app";
+  const caseStudySchema = {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    name: project.title,
+    ...(project.summary ? { description: project.summary } : {}),
+    ...(project.cover_url ? { image: `${siteUrl}${project.cover_url}` } : {}),
+    ...(project.client_name ? { about: project.client_name } : {}),
+    url: `${siteUrl}/portfolio/${slug}`,
+    creator: { "@type": "Organization", name: "Trellee", url: siteUrl },
+  };
+
   return (
     <>
+      <JsonLd data={caseStudySchema} />
       {/* HERO */}
       <section className="relative pt-16 pb-20 lg:pt-24 lg:pb-28 overflow-hidden">
         <div className="mesh" />

@@ -11,6 +11,7 @@ import {
 import { Reveal } from "@/components/site/reveal";
 import { Markdown } from "@/components/site/markdown";
 import { ShareRow } from "@/components/site/share-row";
+import { JsonLd } from "@/components/seo/json-ld";
 import { formatDate } from "@/lib/utils";
 
 export async function generateStaticParams() {
@@ -60,8 +61,26 @@ export default async function BlogPostPage({
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://trellee.vercel.app";
   const postUrl = `${siteUrl}/blog/${slug}`;
 
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    ...(post.excerpt ? { description: post.excerpt } : {}),
+    ...(post.cover_url ? { image: `${siteUrl}${post.cover_url}` } : {}),
+    ...(post.published_at ? { datePublished: post.published_at } : {}),
+    dateModified: post.updated_at ?? post.published_at ?? undefined,
+    ...(author ? { author: { "@type": "Person", name: author.name } } : {}),
+    publisher: {
+      "@type": "Organization",
+      name: "Trellee",
+      logo: { "@type": "ImageObject", url: `${siteUrl}/brand/trellee-logo.png` },
+    },
+    mainEntityOfPage: postUrl,
+  };
+
   return (
     <>
+      <JsonLd data={articleSchema} />
       <section className="relative pt-16 pb-12 lg:pt-24 lg:pb-16 overflow-hidden">
         <div className="mesh" />
         <div className="relative max-w-[800px] mx-auto px-6 lg:px-10">

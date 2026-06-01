@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { PostHogProvider } from "@/components/analytics/posthog-provider";
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 const siteName = "Trellee";
@@ -75,6 +76,7 @@ export default function RootLayout({
       </head>
       <body className="bg-bg text-fg antialiased">
         <PostHogProvider>{children}</PostHogProvider>
+        <GoogleAnalytics />
       </body>
     </html>
   );
