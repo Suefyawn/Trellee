@@ -4,6 +4,7 @@ import {
   Calendar,
   Inbox,
   Newspaper,
+  Receipt,
   Star,
   Workflow,
 } from "lucide-react";
@@ -126,6 +127,19 @@ export default async function AdminDashboard() {
       <AdminPageHeader
         title="Dashboard"
         description="Quick overview of inbound work and what's published on the site."
+        actions={
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link href="/admin/projects/new" className="btn btn-secondary btn-sm">
+              <Workflow className="w-3.5 h-3.5" /> Project
+            </Link>
+            <Link href="/admin/blog/posts/new" className="btn btn-secondary btn-sm">
+              <Newspaper className="w-3.5 h-3.5" /> Post
+            </Link>
+            <Link href="/admin/invoices/new" className="btn btn-primary btn-sm">
+              <Receipt className="w-3.5 h-3.5" /> Invoice
+            </Link>
+          </div>
+        }
       />
       <AdminPageBody>
         {!isSupabaseConfigured() ? (

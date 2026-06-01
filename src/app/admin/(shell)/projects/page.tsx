@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { AdminPageBody, AdminPageHeader } from "@/components/admin/admin-page";
+import { TableFilter } from "@/components/admin/table-filter";
 import { demoProjects } from "@/lib/cms/demo-data";
 import type { ProjectRow } from "@/lib/types/database";
 import { formatDate } from "@/lib/utils";
@@ -32,9 +33,12 @@ export default async function AdminProjectsPage() {
         title="Projects"
         description="Case studies shown on /portfolio and surfaced via service categories."
         actions={
-          <Link href="/admin/projects/new" className="btn btn-primary">
-            <Plus className="w-4 h-4" /> New project
-          </Link>
+          <div className="flex items-center gap-2">
+            <TableFilter targetId="projects-list" placeholder="Filter projects…" />
+            <Link href="/admin/projects/new" className="btn btn-primary">
+              <Plus className="w-4 h-4" /> New project
+            </Link>
+          </div>
         }
       />
       <AdminPageBody>
@@ -49,10 +53,11 @@ export default async function AdminProjectsPage() {
                 <th className="text-left p-4 font-normal">Published</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="projects-list">
               {projects.map((p) => (
                 <tr
                   key={p.id}
+                  data-row
                   className="border-t border-border hover:bg-surface-2/40 transition"
                 >
                   <td className="p-4">
@@ -86,6 +91,11 @@ export default async function AdminProjectsPage() {
                   </td>
                 </tr>
               ))}
+              <tr id="projects-list-empty" style={{ display: "none" }} className="border-t border-border">
+                <td colSpan={5} className="p-4 text-center text-muted t-small">
+                  No matches.
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
