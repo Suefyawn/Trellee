@@ -12,7 +12,7 @@ import {
 import { Reveal } from "@/components/site/reveal";
 import { ServiceIcon } from "@/components/site/service-icon";
 import { FAQAccordion } from "@/components/site/faq-accordion";
-import { JsonLd } from "@/components/seo/json-ld";
+import { JsonLd, breadcrumb } from "@/components/seo/json-ld";
 
 export async function generateStaticParams() {
   const services = await getServices();
@@ -78,9 +78,17 @@ export default async function ServiceDetailPage({
         }
       : null;
 
+  const crumbs = breadcrumb(siteUrl, [
+    { name: "Home", path: "/" },
+    { name: "Services", path: "/services" },
+    { name: service.title, path: `/services/${slug}` },
+  ]);
+
   return (
     <>
-      <JsonLd data={faqSchema ? [serviceSchema, faqSchema] : serviceSchema} />
+      <JsonLd
+        data={faqSchema ? [serviceSchema, faqSchema, crumbs] : [serviceSchema, crumbs]}
+      />
       {/* HERO */}
       <section className="relative pt-16 pb-20 lg:pt-24 lg:pb-28 overflow-hidden">
         <div className="mesh" />

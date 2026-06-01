@@ -11,7 +11,7 @@ import {
 import { Reveal } from "@/components/site/reveal";
 import { Markdown } from "@/components/site/markdown";
 import { ShareRow } from "@/components/site/share-row";
-import { JsonLd } from "@/components/seo/json-ld";
+import { JsonLd, breadcrumb } from "@/components/seo/json-ld";
 import { formatDate } from "@/lib/utils";
 
 export async function generateStaticParams() {
@@ -80,7 +80,16 @@ export default async function BlogPostPage({
 
   return (
     <>
-      <JsonLd data={articleSchema} />
+      <JsonLd
+        data={[
+          articleSchema,
+          breadcrumb(siteUrl, [
+            { name: "Home", path: "/" },
+            { name: "Field notes", path: "/blog" },
+            { name: post.title, path: `/blog/${slug}` },
+          ]),
+        ]}
+      />
       <section className="relative pt-16 pb-12 lg:pt-24 lg:pb-16 overflow-hidden">
         <div className="mesh" />
         <div className="relative max-w-[800px] mx-auto px-6 lg:px-10">
