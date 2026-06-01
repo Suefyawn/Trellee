@@ -16,6 +16,7 @@ import * as blog from "./blog";
 import * as bookings from "./bookings";
 import * as leads from "./leads";
 import * as misc from "./misc";
+import * as invoices from "./invoices";
 
 export const upsertServiceAction = services.upsertService;
 export const deleteServiceAction = services.deleteService;
@@ -53,3 +54,7 @@ export const deleteActivityAction = misc.deleteActivity;
 export const upsertSocialLinkAction = misc.upsertSocialLink;
 export const deleteSocialLinkAction = misc.deleteSocialLink;
 export const updateSiteSettingsAction = misc.updateSiteSettings;
+
+export const upsertInvoiceAction = invoices.upsertInvoice;
+export const updateInvoiceStatusAction = invoices.updateInvoiceStatus;
+export const deleteInvoiceAction = invoices.deleteInvoice;

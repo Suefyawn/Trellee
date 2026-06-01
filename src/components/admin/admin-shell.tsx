@@ -16,6 +16,7 @@ import {
   Menu,
   MessageSquare,
   Newspaper,
+  Receipt,
   Settings,
   Star,
   Users,
@@ -54,6 +55,10 @@ const sections: { label: string; items: NavItem[] }[] = [
       { href: "/admin/bookings", label: "Bookings", icon: Calendar },
       { href: "/admin/leads", label: "Contact leads", icon: Inbox },
     ],
+  },
+  {
+    label: "Business",
+    items: [{ href: "/admin/invoices", label: "Invoices", icon: Receipt }],
   },
   {
     label: "Studio",
@@ -100,7 +105,7 @@ export function AdminShell({
   return (
     <div className="min-h-screen lg:flex bg-bg text-fg">
       {/* Mobile topbar */}
-      <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between p-4 border-b border-border bg-bg/80 backdrop-blur-md">
+      <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between p-4 border-b border-border bg-bg/80 backdrop-blur-md print:hidden">
         <Link href="/admin" className="flex items-center gap-3" aria-label="Trellee admin">
           <Logo size="sm" />
           <span className="t-mono text-muted text-xs uppercase tracking-wider">
@@ -130,7 +135,7 @@ export function AdminShell({
       {/* Sidebar — fixed drawer on mobile, static column on lg+ */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-72 border-r border-border bg-surface/95 backdrop-blur-md flex flex-col transition-transform",
+          "fixed inset-y-0 left-0 z-50 w-72 border-r border-border bg-surface/95 backdrop-blur-md flex flex-col transition-transform print:hidden",
           "lg:static lg:w-64 lg:bg-surface/40 lg:translate-x-0 lg:flex-shrink-0",
           drawerOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}

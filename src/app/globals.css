@@ -698,3 +698,15 @@
     transform: none !important;
   }
 }
+
+/* Print — used by the admin invoice view (Save as PDF). Force a white page
+   and drop shadows so the invoice sheet prints cleanly. */
+@media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+  .invoice-sheet {
+    box-shadow: none !important;
+  }
+}
