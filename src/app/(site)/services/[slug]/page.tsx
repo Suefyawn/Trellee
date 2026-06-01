@@ -87,9 +87,9 @@ export default async function ServiceDetailPage({
                     Book a discovery call <ArrowRight className="w-4 h-4" />
                   </span>
                 </Link>
-                <a href="#pricing" className="btn btn-secondary btn-lg">
-                  See pricing
-                </a>
+                <Link href="/contact" className="btn btn-secondary btn-lg">
+                  Send a brief
+                </Link>
               </div>
               {service.tags.length > 0 ? (
                 <div className="mt-7 flex flex-wrap gap-1.5">
