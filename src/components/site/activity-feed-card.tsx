@@ -1,10 +1,25 @@
 import type { ActivityFeedRow } from "@/lib/types/database";
 
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
+/**
+ * Relative "time ago" for the live build log. Reads as genuinely recent
+ * ("2d ago") instead of a fixed clock time, and falls back to a short date
+ * once an entry is more than a few weeks old. Computed at build/render time.
+ */
+function timeAgo(iso: string) {
+  const then = new Date(iso).getTime();
+  const diff = Date.now() - then;
+  const min = Math.round(diff / 60000);
+  if (min < 1) return "now";
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.round(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  const day = Math.round(hr / 24);
+  if (day < 7) return `${day}d ago`;
+  const wk = Math.round(day / 7);
+  if (wk <= 4) return `${wk}w ago`;
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
   });
 }
 
@@ -22,8 +37,8 @@ export function ActivityFeedCard({ items }: { items: ActivityFeedRow[] }) {
       <ul className="mt-5 space-y-3 t-small">
         {items.slice(0, 4).map((item) => (
           <li key={item.id} className="flex items-start gap-3">
-            <span className="t-mono text-muted text-xs w-12 flex-shrink-0 pt-0.5">
-              {formatTime(item.occurred_at)}
+            <span className="t-mono text-muted text-xs w-16 flex-shrink-0 pt-0.5">
+              {timeAgo(item.occurred_at)}
             </span>
             <span className="flex-1">{item.message}</span>
             {item.badge ? (
