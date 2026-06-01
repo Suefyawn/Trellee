@@ -51,7 +51,7 @@ export default function GlobalError({
         </h1>
 
         <p className="t-body-l text-muted mt-4 max-w-md mx-auto">
-          An unexpected error came back from the server. Try refreshing — if it
+          An unexpected error came back from the server. Try refreshing. If it
           keeps happening, drop us a note and we&apos;ll look into it.
         </p>
 

@@ -83,7 +83,7 @@ export function MobileNav() {
             href="/"
             className="-my-1"
             onClick={() => setOpen(false)}
-            aria-label="Trellee — home"
+            aria-label="Trellee home"
           >
             <Logo size="sm" />
           </Link>

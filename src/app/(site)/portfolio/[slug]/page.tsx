@@ -103,6 +103,22 @@ export default async function CaseStudyPage({
         </div>
       </section>
 
+      {/* COVER — the live site's hero, shown as the lead visual */}
+      {project.cover_url ? (
+        <section className="pb-8 lg:pb-12">
+          <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
+            <Reveal className="surface-card overflow-hidden aspect-[16/10] md:aspect-[16/9]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={project.cover_url}
+                alt={`${project.title} website`}
+                className="w-full h-full object-cover object-top"
+              />
+            </Reveal>
+          </div>
+        </section>
+      ) : null}
+
       {/* GALLERY — only renders when project.gallery has entries. Empty galleries
           would just show four blank boxes, which looks worse than skipping the section. */}
       {project.gallery.length > 0 ? (
@@ -118,7 +134,7 @@ export default async function CaseStudyPage({
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={item.url}
-                      alt={item.caption ?? `${project.title} — image ${i + 1}`}
+                      alt={item.caption ?? `${project.title} image ${i + 1}`}
                       className="w-full h-auto"
                     />
                   ) : (

@@ -149,7 +149,7 @@ export function ContactForm({ services }: { services: ServiceRow[] }) {
           rows={5}
           value={form.message}
           onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
-          placeholder="A few paragraphs about the project — context, audience, what success looks like, any constraints."
+          placeholder="A few paragraphs about the project: context, audience, what success looks like, any constraints."
           required
         />
       </label>

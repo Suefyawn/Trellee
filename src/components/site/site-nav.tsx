@@ -24,7 +24,7 @@ export function SiteNav() {
         <Link
           href="/"
           className="flex-shrink-0 -my-2"
-          aria-label="Trellee — home"
+          aria-label="Trellee home"
         >
           <Logo size="sm" priority />
         </Link>

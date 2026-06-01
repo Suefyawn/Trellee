@@ -424,7 +424,7 @@ export default async function HomePage() {
             </Reveal>
             <Reveal delay={1} className="lg:col-span-5">
               <p className="t-body-l text-muted">
-                Real clients, in their own words — on camera and on Google. On the
+                Real clients, in their own words, on camera and on Google. On the
                 work, the value, and how fast we get back to them.
               </p>
             </Reveal>

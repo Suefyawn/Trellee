@@ -7,7 +7,7 @@ import { PortfolioFilters } from "@/components/site/portfolio-filters";
 export const metadata = {
   title: "Work",
   description:
-    "Recent ships. Filter by discipline — design, dev, mobile, CRMs, AI, growth.",
+    "Recent ships. Filter by discipline: design, dev, mobile, CRMs, AI, growth.",
   alternates: { canonical: "/portfolio" },
 };
 
@@ -49,7 +49,7 @@ export default async function PortfolioPage({
         <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
           {projects.length === 0 ? (
             <p className="t-body text-muted">
-              No projects match this filter yet — check back soon.
+              No projects match this filter yet. Check back soon.
             </p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -59,17 +59,39 @@ export default async function PortfolioPage({
                   <Link
                     key={p.id}
                     href={`/portfolio/${p.slug}`}
-                    className={`bento-tile p-7 group flex flex-col justify-between min-h-[340px] ${
+                    className={`bento-tile p-0 overflow-hidden group flex flex-col min-h-[340px] ${
                       isFeature
                         ? "md:col-span-2 lg:col-span-2 lg:row-span-2 lg:min-h-[700px]"
                         : ""
                     }`}
                   >
+                    <div
+                      className={`relative overflow-hidden border-b border-border bg-surface-2 ${
+                        isFeature ? "flex-1 min-h-[200px]" : "aspect-[16/10]"
+                      }`}
+                    >
+                      {p.cover_url ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={p.cover_url}
+                          alt={`${p.title} website`}
+                          className="absolute inset-0 w-full h-full object-cover object-top transition duration-500 group-hover:scale-[1.03]"
+                          loading={isFeature ? "eager" : "lazy"}
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-surface-2 to-bg flex items-center justify-center">
+                          <span className="font-display text-2xl text-muted/40 tracking-tight px-6 text-center">
+                            {p.title}
+                          </span>
+                        </div>
+                      )}
+                      <ArrowUpRight className="absolute top-4 right-4 w-7 h-7 text-fg bg-bg/50 backdrop-blur rounded-md p-1 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition" />
+                    </div>
+                    <div className="p-7 flex-1 flex flex-col justify-between">
                     <div className="flex items-start justify-between">
                       <span className="mono-tag">
                         {p.hero_eyebrow ?? "CASE STUDY"}
                       </span>
-                      <ArrowUpRight className="w-5 h-5 text-muted group-hover:text-fg group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition" />
                     </div>
                     <div>
                       <h3
@@ -113,6 +135,7 @@ export default async function PortfolioPage({
                           ))}
                         </div>
                       ) : null}
+                    </div>
                     </div>
                   </Link>
                 );

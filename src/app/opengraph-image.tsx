@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Trellee — Full-stack digital agency";
+export const alt = "Trellee · Full-stack digital agency";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -72,7 +72,7 @@ export default async function OpengraphImage() {
               lineHeight: 1.4,
             }}
           >
-            Design, code, and growth — built in one team. From the first commit to the first conversion.
+            Design, code, and growth, built in one team. From the first commit to the first conversion.
           </div>
         </div>
 

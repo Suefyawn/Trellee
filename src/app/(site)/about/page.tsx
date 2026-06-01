@@ -97,15 +97,15 @@ export default async function AboutPage() {
             {[
               {
                 title: "Listen first, sell never",
-                body: "Your project is an investment. Our job is to help you weigh your options and make your best choice — not pitch you the thing we happen to sell.",
+                body: "Your project is an investment. Our job is to help you weigh your options and make your best choice, not pitch you the thing we happen to sell.",
               },
               {
                 title: "Fluent in human and tech-speak",
-                body: "Integrations, redirects, the jargon — we translate it (unless you speak the language), so you always know exactly what we're working on and why.",
+                body: "Integrations, redirects, the jargon: we translate it (unless you speak the language), so you always know exactly what we're working on and why.",
               },
               {
                 title: "Lightning-fast responses",
-                body: "A dedicated point of contact for your whole build, and replies measured in hours — often minutes — not days.",
+                body: "A dedicated point of contact for your whole build, and replies measured in hours, often minutes, not days.",
               },
             ].map((c, i) => (
               <Reveal
@@ -264,8 +264,7 @@ export default async function AboutPage() {
                     handed the work once the contract&apos;s signed.
                   </p>
                   <p className="t-body text-muted mt-4">
-                    When the work needs more hands, we bring in trusted specialists
-                    — but the strategy, the architecture, and the relationship stay
+                    When the work needs more hands, we bring in trusted specialists, but the strategy, the architecture, and the relationship stay
                     with one person, start to finish.
                   </p>
                 </Reveal>

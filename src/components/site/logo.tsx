@@ -34,9 +34,9 @@ export function Logo({
       priority={priority}
       className={cn(
         "block w-auto",
-        size === "sm" && "h-6",
-        size === "md" && "h-7",
-        size === "lg" && "h-10",
+        size === "sm" && "h-8",
+        size === "md" && "h-9",
+        size === "lg" && "h-12",
         className,
       )}
     />
