@@ -192,9 +192,11 @@
   /* ---------- Type scale ---------- */
   .t-display-xl {
     font-family: var(--font-display);
-    font-size: clamp(3.5rem, 8vw, 7.5rem);
+    /* min lowered for small phones (~360-390px) so long hero words and the
+       ticker don't crowd or clip; scales back up fast past ~550px. */
+    font-size: clamp(2.75rem, 8.5vw, 7.5rem);
     letter-spacing: -0.04em;
-    line-height: 0.92;
+    line-height: 0.94;
     font-weight: 600;
   }
   .t-display-l {
@@ -665,6 +667,15 @@
   }
   .reveal-d3 {
     transition-delay: 0.24s;
+  }
+
+  /* ---------- Hide scrollbar (horizontal chip rows, etc.) ---------- */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 
   /* ---------- Ticker ---------- */

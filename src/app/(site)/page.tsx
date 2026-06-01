@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Star } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import {
   getActivityFeed,
   getClients,
@@ -13,6 +13,7 @@ import { ActivityFeedCard } from "@/components/site/activity-feed-card";
 import { BentoTile } from "@/components/site/bento-tile";
 import { HeroTicker } from "@/components/site/hero-ticker";
 import { Reveal } from "@/components/site/reveal";
+import { ReviewsCarousel } from "@/components/site/reviews-carousel";
 import { ServiceIcon } from "@/components/site/service-icon";
 import { VideoReview } from "@/components/site/video-review";
 
@@ -166,7 +167,7 @@ export default async function HomePage() {
                   : service.tile_size === "lg"
                     ? "col-span-12 sm:col-span-6 lg:col-span-6 lg:row-span-2"
                     : service.tile_size === "md"
-                      ? "col-span-6 lg:col-span-5 lg:row-span-1"
+                      ? "col-span-12 sm:col-span-6 lg:col-span-5 lg:row-span-1"
                       : "col-span-6 lg:col-span-3 lg:row-span-1";
               return (
                 <BentoTile
@@ -447,43 +448,9 @@ export default async function HomePage() {
             </div>
           ) : null}
 
-          {/* Text reviews */}
+          {/* Text reviews — carousel */}
           {textReviews.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {textReviews.map((r, i) => (
-                <Reveal
-                  key={r.id}
-                  delay={((i % 3) + 1) as 1 | 2 | 3}
-                  className="surface-card p-7 flex flex-col"
-                >
-                  <div className="flex items-center gap-1 mb-4">
-                    {Array.from({ length: r.rating ?? 5 }).map((_, s) => (
-                      <Star key={s} className="w-4 h-4 text-brand-500 fill-brand-500" />
-                    ))}
-                  </div>
-                  <blockquote className="t-body text-fg flex-1">{r.quote}</blockquote>
-                  <div className="flex items-center gap-3 mt-6 pt-5 border-t border-border">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-bg text-sm font-semibold flex-shrink-0">
-                      {r.author_name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .slice(0, 2)
-                        .join("")}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="t-small text-fg">{r.author_name}</div>
-                      {r.author_role || r.author_company ? (
-                        <div className="t-mono text-muted text-[11px] truncate">
-                          {[r.author_role, r.author_company]
-                            .filter(Boolean)
-                            .join(" · ")}
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
+            <ReviewsCarousel reviews={textReviews} />
           ) : null}
         </div>
       </section>
