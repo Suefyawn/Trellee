@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Save } from "lucide-react";
+import { useUnsavedChanges } from "@/lib/use-unsaved-changes";
 import { upsertProjectAction } from "@/app/admin/_actions/wrappers";
 import type { ProjectRow, ServiceRow } from "@/lib/types/database";
 import { slugify } from "@/lib/utils";
@@ -46,8 +47,12 @@ export function ProjectForm({
   const [technologies, setTechnologies] = useState(initial?.technologies ?? []);
   const [gallery, setGallery] = useState(initial?.gallery ?? []);
 
+  const [dirty, setDirty] = useState(false);
+  useUnsavedChanges(dirty);
+
   function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+    setDirty(true);
   }
 
   function toggleCategory(slug: string) {
@@ -88,6 +93,7 @@ export function ProjectForm({
         return;
       }
       setSaved(true);
+      setDirty(false);
       if (!initial?.id && res.id) router.push(`/admin/projects/${res.id}`);
       else router.refresh();
     });

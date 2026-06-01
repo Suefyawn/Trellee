@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 import { getProjects, getServices } from "@/lib/cms";
 import { Reveal } from "@/components/site/reveal";
@@ -71,12 +72,17 @@ export default async function PortfolioPage({
                       }`}
                     >
                       {p.cover_url ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
+                        <Image
                           src={p.cover_url}
                           alt={`${p.title} website`}
-                          className="absolute inset-0 w-full h-full object-cover object-top transition duration-500 group-hover:scale-[1.03]"
-                          loading={isFeature ? "eager" : "lazy"}
+                          fill
+                          sizes={
+                            isFeature
+                              ? "(max-width: 1024px) 100vw, 66vw"
+                              : "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          }
+                          priority={isFeature}
+                          className="object-cover object-top transition duration-500 group-hover:scale-[1.03]"
                         />
                       ) : (
                         <div className="absolute inset-0 bg-gradient-to-br from-surface-2 to-bg flex items-center justify-center">

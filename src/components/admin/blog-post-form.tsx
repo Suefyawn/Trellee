@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Save } from "lucide-react";
+import { useUnsavedChanges } from "@/lib/use-unsaved-changes";
 import { upsertBlogPostAction } from "@/app/admin/_actions/wrappers";
 import type {
   BlogCategoryRow,
@@ -43,8 +44,12 @@ export function BlogPostForm({
     meta_description: initial?.meta_description ?? "",
   });
 
+  const [dirty, setDirty] = useState(false);
+  useUnsavedChanges(dirty);
+
   function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+    setDirty(true);
   }
 
   function submit(e: React.FormEvent) {
@@ -73,6 +78,7 @@ export function BlogPostForm({
         setErr(res.error ?? "Could not save.");
         return;
       }
+      setDirty(false);
       if (!initial?.id && res.id) router.push(`/admin/blog/posts/${res.id}`);
       else router.refresh();
     });

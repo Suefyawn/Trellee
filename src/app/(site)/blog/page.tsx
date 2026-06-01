@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   getBlogCategories,
   getBlogPosts,
@@ -118,11 +119,12 @@ export default async function BlogPage({
                   <div className="grid lg:grid-cols-12">
                     {featured.cover_url ? (
                       <div className="lg:col-span-7 relative aspect-[16/9] lg:aspect-auto overflow-hidden bg-surface-2">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <Image
                           src={featured.cover_url}
                           alt={featured.title}
-                          className="absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-[1.02]"
+                          fill
+                          sizes="(max-width: 1024px) 100vw, 58vw"
+                          className="object-cover transition duration-500 group-hover:scale-[1.02]"
                         />
                       </div>
                     ) : (
@@ -192,12 +194,12 @@ export default async function BlogPage({
                     >
                       {post.cover_url ? (
                         <div className="relative aspect-[16/9] overflow-hidden bg-surface-2">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
+                          <Image
                             src={post.cover_url}
                             alt={post.title}
-                            loading="lazy"
-                            className="absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            className="object-cover transition duration-500 group-hover:scale-[1.03]"
                           />
                         </div>
                       ) : (

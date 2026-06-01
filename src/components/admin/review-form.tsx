@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Save } from "lucide-react";
+import { useUnsavedChanges } from "@/lib/use-unsaved-changes";
 import { upsertReviewAction } from "@/app/admin/_actions/wrappers";
 import { uploadAsset } from "@/app/admin/_actions/reviews";
 import type { ProjectRow, ReviewRow } from "@/lib/types/database";
@@ -38,8 +39,12 @@ export function ReviewForm({
 
   const [uploading, setUploading] = useState<null | "video" | "thumb" | "avatar">(null);
 
+  const [dirty, setDirty] = useState(false);
+  useUnsavedChanges(dirty);
+
   function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+    setDirty(true);
   }
 
   async function fileToBase64(file: File): Promise<string> {
@@ -119,6 +124,7 @@ export function ReviewForm({
         return;
       }
       setSaved(true);
+      setDirty(false);
       router.push("/admin/reviews");
       router.refresh();
     });

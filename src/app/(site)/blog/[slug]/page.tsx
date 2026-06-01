@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import {
@@ -117,12 +118,13 @@ export default async function BlogPostPage({
       {post.cover_url ? (
         <section className="pb-4 lg:pb-8">
           <div className="max-w-[1000px] mx-auto px-6 lg:px-10">
-            <Reveal className="surface-card overflow-hidden aspect-[16/9]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+            <Reveal className="surface-card overflow-hidden aspect-[16/9] relative">
+              <Image
                 src={post.cover_url}
                 alt={post.title}
-                className="w-full h-full object-cover"
+                fill
+                sizes="(max-width: 1024px) 100vw, 1000px"
+                className="object-cover"
               />
             </Reveal>
           </div>
