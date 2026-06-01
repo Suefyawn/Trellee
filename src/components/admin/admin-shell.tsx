@@ -73,7 +73,7 @@ const sections: { label: string; items: NavItem[] }[] = [
     ],
   },
   {
-    label: "Studio",
+    label: "Brand & about",
     items: [
       { href: "/admin/team", label: "Team", icon: Users },
       { href: "/admin/clients", label: "Clients", icon: Briefcase },

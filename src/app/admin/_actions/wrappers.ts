@@ -23,6 +23,7 @@ import * as monitor from "./monitor";
 
 export const upsertServiceAction = services.upsertService;
 export const deleteServiceAction = services.deleteService;
+export const reorderServicesAction = services.reorderServices;
 
 export const upsertPricingTierAction = pricing.upsertPricingTier;
 export const deletePricingTierAction = pricing.deletePricingTier;
