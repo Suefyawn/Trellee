@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Play, Star } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Star } from "lucide-react";
 import {
   getActivityFeed,
   getClients,
@@ -14,6 +14,7 @@ import { BentoTile } from "@/components/site/bento-tile";
 import { HeroTicker } from "@/components/site/hero-ticker";
 import { Reveal } from "@/components/site/reveal";
 import { ServiceIcon } from "@/components/site/service-icon";
+import { VideoReview } from "@/components/site/video-review";
 
 // Title + description inherit the site-wide defaults from the root layout; we
 // only pin the canonical URL here so the homepage isn't deduped against any
@@ -28,7 +29,7 @@ export default async function HomePage() {
       getSiteSettings(),
       getServices({ featuredOnly: false }),
       getProjects({ featuredOnly: true, limit: 3 }),
-      getReviews({ featuredOnly: true, limit: 4 }),
+      getReviews({ featuredOnly: true, limit: 24 }),
       getProcessSteps(),
       getActivityFeed(),
       getClients({ featuredOnly: true }),
@@ -36,11 +37,8 @@ export default async function HomePage() {
 
   const featuredProject = projects[0];
   const supportingProjects = projects.slice(1);
-  const leadReview = reviews.find((r) => r.type === "text") ?? reviews[0];
-  const videoReviews = reviews.filter((r) => r.type === "video").slice(0, 2);
-  const otherTextReview = reviews.find(
-    (r) => r.type === "text" && r.id !== leadReview?.id,
-  );
+  const videoReviews = reviews.filter((r) => r.type === "video");
+  const textReviews = reviews.filter((r) => r.type === "text");
 
   return (
     <>
@@ -412,6 +410,7 @@ export default async function HomePage() {
       ) : null}
 
       {/* ============================= REVIEWS ============================= */}
+      {videoReviews.length > 0 || textReviews.length > 0 ? (
       <section className="py-24 lg:py-32 relative overflow-hidden">
         <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
           <div className="grid lg:grid-cols-12 gap-8 mb-12 items-end">
@@ -425,80 +424,70 @@ export default async function HomePage() {
             </Reveal>
             <Reveal delay={1} className="lg:col-span-5">
               <p className="t-body-l text-muted">
-                Real Google reviews from the people we&apos;ve built for — on the
-                work, the price, and how fast we get back to them.
+                Real clients, in their own words — on camera and on Google. On the
+                work, the value, and how fast we get back to them.
               </p>
             </Reveal>
           </div>
 
-          <div className="grid lg:grid-cols-12 gap-6">
-            {/* Lead text quote */}
-            {leadReview ? (
-              <Reveal className="lg:col-span-7 surface-card p-8 lg:p-10">
-                <Star className="w-6 h-6 text-brand-500 fill-brand-500" />
-                <blockquote className="t-heading-l font-display mt-6">
-                  {leadReview.quote ??
-                    "The clearest scope, the cleanest delivery."}
-                </blockquote>
-                <div className="flex items-center gap-3 mt-8 pt-6 border-t border-border">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-bg font-semibold">
-                    {leadReview.author_name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .slice(0, 2)
-                      .join("")}
+          {/* Video testimonials */}
+          {videoReviews.length > 0 ? (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4 lg:mb-6">
+              {videoReviews.map((v, i) => (
+                <Reveal key={v.id} delay={((i % 3) + 1) as 1 | 2 | 3}>
+                  <VideoReview
+                    src={v.video_url ?? ""}
+                    name={v.author_name}
+                    role={v.author_role}
+                    company={v.author_company}
+                    duration={v.duration}
+                  />
+                </Reveal>
+              ))}
+            </div>
+          ) : null}
+
+          {/* Text reviews */}
+          {textReviews.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {textReviews.map((r, i) => (
+                <Reveal
+                  key={r.id}
+                  delay={((i % 3) + 1) as 1 | 2 | 3}
+                  className="surface-card p-7 flex flex-col"
+                >
+                  <div className="flex items-center gap-1 mb-4">
+                    {Array.from({ length: r.rating ?? 5 }).map((_, s) => (
+                      <Star key={s} className="w-4 h-4 text-brand-500 fill-brand-500" />
+                    ))}
                   </div>
-                  <div>
-                    <div className="t-small">
-                      <span className="text-fg">{leadReview.author_name}</span>
-                      {leadReview.author_role ? (
-                        <span className="text-muted">
-                          {" · "}
-                          {leadReview.author_role}
-                        </span>
+                  <blockquote className="t-body text-fg flex-1">{r.quote}</blockquote>
+                  <div className="flex items-center gap-3 mt-6 pt-5 border-t border-border">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-bg text-sm font-semibold flex-shrink-0">
+                      {r.author_name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .slice(0, 2)
+                        .join("")}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="t-small text-fg">{r.author_name}</div>
+                      {r.author_role || r.author_company ? (
+                        <div className="t-mono text-muted text-[11px] truncate">
+                          {[r.author_role, r.author_company]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </div>
                       ) : null}
                     </div>
-                    {leadReview.author_company ? (
-                      <div className="t-mono text-muted text-xs">
-                        {leadReview.author_company}
-                      </div>
-                    ) : null}
                   </div>
-                </div>
-              </Reveal>
-            ) : null}
-
-            {/* Video reviews */}
-            <Reveal delay={1} className="lg:col-span-5 grid grid-cols-1 gap-6">
-              {videoReviews.map((v) => (
-                <VideoReviewCard key={v.id} review={v} />
+                </Reveal>
               ))}
-            </Reveal>
-
-            {/* Secondary text review */}
-            {otherTextReview ? (
-              <Reveal delay={2} className="lg:col-span-12 surface-card p-7">
-                <div className="flex items-start gap-6 flex-wrap">
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: otherTextReview.rating ?? 5 }).map(
-                      (_, i) => (
-                        <Star key={i} className="w-4 h-4 text-muted" />
-                      ),
-                    )}
-                  </div>
-                  <blockquote className="flex-1 t-body-l text-fg max-w-3xl">
-                    {otherTextReview.quote}
-                  </blockquote>
-                  <div className="t-mono text-muted text-sm">
-                    {otherTextReview.author_name} ·{" "}
-                    {otherTextReview.author_company}
-                  </div>
-                </div>
-              </Reveal>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
         </div>
       </section>
+      ) : null}
 
       {/* ============================= STATS + BOOKING CTA ============================= */}
       <section id="book" className="py-24 lg:py-32 relative overflow-hidden">
@@ -562,72 +551,5 @@ export default async function HomePage() {
         </div>
       </section>
     </>
-  );
-}
-
-// ============================= INTERNAL MOCKS =============================
-
-function VideoReviewCard({
-  review,
-}: {
-  review: {
-    id: string;
-    author_name: string;
-    author_role: string | null;
-    author_company: string | null;
-    duration: string | null;
-    video_thumbnail_url: string | null;
-  };
-}) {
-  return (
-    <div className="surface-card overflow-hidden group">
-      <div className="relative aspect-video bg-gradient-to-br from-surface-2 to-bg flex items-center justify-center">
-        {/* Silhouette */}
-        <svg
-          viewBox="0 0 200 120"
-          className="absolute inset-0 w-full h-full opacity-40"
-          aria-hidden
-        >
-          <ellipse cx="100" cy="50" rx="22" ry="26" fill="oklch(0.25 0.005 258)" />
-          <path
-            d="M55 130 Q55 80 100 80 Q145 80 145 130 Z"
-            fill="oklch(0.25 0.005 258)"
-          />
-        </svg>
-        <div className="relative w-14 h-14 rounded-full bg-fg/95 group-hover:scale-105 transition flex items-center justify-center">
-          <Play className="w-5 h-5 text-bg fill-bg" />
-        </div>
-        <div className="absolute top-3 left-3 flex items-center gap-2">
-          <span className="t-mono text-[10px] text-fg/80 px-2 py-1 rounded bg-bg/60 backdrop-blur">
-            <span className="text-brand-500">●</span> REC
-          </span>
-        </div>
-        {review.duration ? (
-          <div className="absolute bottom-3 right-3 t-mono text-[10px] text-fg/80 px-2 py-1 rounded bg-bg/60 backdrop-blur">
-            {review.duration}
-          </div>
-        ) : null}
-      </div>
-      <div className="p-5">
-        <div className="flex items-center gap-2">
-          <span className="badge badge-brand">VIDEO</span>
-          <span className="t-mono text-muted text-xs">Client review</span>
-        </div>
-        <div className="t-small mt-3">
-          <span className="text-fg">{review.author_name}</span>
-          {review.author_role ? (
-            <span className="text-muted">
-              {" · "}
-              {review.author_role}
-            </span>
-          ) : null}
-        </div>
-        {review.author_company ? (
-          <div className="t-mono text-muted text-xs">
-            {review.author_company}
-          </div>
-        ) : null}
-      </div>
-    </div>
   );
 }
