@@ -2,6 +2,7 @@
 
 import { sendBookingEmails } from "@/lib/email";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
+import { validateBooking } from "@/lib/validation";
 
 export type BookingInput = {
   service_slug?: string;
@@ -19,11 +20,8 @@ export type BookingResult =
   | { ok: false; error: string };
 
 export async function submitBooking(input: BookingInput): Promise<BookingResult> {
-  // Validation
-  if (!input.name?.trim()) return { ok: false, error: "Name is required." };
-  if (!input.email?.trim()) return { ok: false, error: "Email is required." };
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(input.email))
-    return { ok: false, error: "Please enter a valid email." };
+  const validationError = validateBooking(input);
+  if (validationError) return { ok: false, error: validationError };
 
   const supabaseConfigured =
     !!process.env.NEXT_PUBLIC_SUPABASE_URL &&

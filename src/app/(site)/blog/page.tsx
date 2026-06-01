@@ -12,6 +12,7 @@ import { formatDate } from "@/lib/utils";
 export const metadata = {
   title: "Field notes",
   description: "What we shipped, what broke, what we're reading.",
+  alternates: { canonical: "/blog" },
 };
 
 export default async function BlogPage({

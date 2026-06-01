@@ -67,7 +67,9 @@ export async function updateSupabaseSession(request: NextRequest) {
       url.searchParams.set("next", pathname);
       return NextResponse.redirect(url);
     }
-    if (ownerEmail && user.email?.toLowerCase() !== ownerEmail) {
+    // Fail closed: if the owner email isn't configured, deny rather than let
+    // any authenticated user through.
+    if (!ownerEmail || user.email?.toLowerCase() !== ownerEmail) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin/login";
       url.searchParams.set("error", "unauthorized");

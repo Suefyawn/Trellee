@@ -4,6 +4,7 @@ import { BookingFlow } from "@/components/site/booking-flow";
 export const metadata = {
   title: "Book a discovery call",
   description: "30 minutes. No slides. Bring the problem, we'll bring the questions.",
+  alternates: { canonical: "/book" },
 };
 
 export default async function BookPage({

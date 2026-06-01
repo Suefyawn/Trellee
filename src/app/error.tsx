@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, RefreshCw } from "lucide-react";
+import * as Sentry from "@sentry/nextjs";
 
 /**
  * Global error boundary — catches unexpected runtime errors anywhere in the
@@ -17,11 +18,12 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Surface the error to whatever client-side logging the host attaches
-    // (Sentry, console, etc.). The digest is set by Next on server errors so
-    // ops can correlate it with the matching server log entry.
+    // Report to Sentry (no-op when no DSN is configured) so production errors
+    // are captured even though the user only sees the friendly fallback. The
+    // digest is set by Next on server errors so ops can correlate it with the
+    // matching server log entry.
+    Sentry.captureException(error);
     if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
       console.error("[GlobalError]", error);
     }
   }, [error]);

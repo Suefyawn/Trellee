@@ -48,6 +48,14 @@ Bookings and contact form submissions send two emails each: a notification to th
 
 > Email failures never block form submissions — they're logged and forgotten, the DB row is always the source of truth.
 
+## Observability (optional)
+
+Error tracking (**Sentry**) and product analytics (**PostHog**) are wired in but
+fully inert until you provide keys — no DSN/key means no init, no network calls,
+and (for PostHog) the library isn't even bundled. Add the relevant
+`NEXT_PUBLIC_*` vars from `.env.example` to switch them on. See
+[`FINALIZE.md`](./FINALIZE.md) for the full go-live runbook.
+
 ## Project layout
 
 ```

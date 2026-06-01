@@ -1,4 +1,4 @@
-import { Github, Instagram, Linkedin, Twitter, Youtube, Globe } from "lucide-react";
+import { Github, Instagram, Linkedin, Youtube, Globe } from "lucide-react";
 
 export function SocialIcon({
   platform,
