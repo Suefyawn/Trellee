@@ -9,6 +9,7 @@ import {
 } from "@/lib/cms";
 import { Reveal } from "@/components/site/reveal";
 import { Markdown } from "@/components/site/markdown";
+import { ShareRow } from "@/components/site/share-row";
 import { formatDate } from "@/lib/utils";
 
 export async function generateStaticParams() {
@@ -40,14 +41,23 @@ export default async function BlogPostPage({
   const post = await getBlogPostBySlug(slug);
   if (!post) notFound();
 
-  const [categories, team, related] = await Promise.all([
+  const [categories, team, allPosts] = await Promise.all([
     getBlogCategories(),
     getTeamMembers(),
-    getBlogPosts({ limit: 3 }),
+    getBlogPosts(),
   ]);
   const author = post.author_id ? team.find((t) => t.id === post.author_id) : null;
   const cat = post.category_id ? categories.find((c) => c.id === post.category_id) : null;
-  const relatedPosts = related.filter((p) => p.id !== post.id).slice(0, 2);
+  const relatedPosts = allPosts.filter((p) => p.id !== post.id).slice(0, 2);
+
+  // Prev/next by publish order (allPosts is newest-first).
+  const idx = allPosts.findIndex((p) => p.id === post.id);
+  const newer = idx > 0 ? allPosts[idx - 1] : null;
+  const older = idx >= 0 && idx < allPosts.length - 1 ? allPosts[idx + 1] : null;
+
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://trellee.vercel.app";
+  const postUrl = `${siteUrl}/blog/${slug}`;
 
   return (
     <>
@@ -97,6 +107,9 @@ export default async function BlogPostPage({
                 </div>
               </div>
             ) : null}
+            <div className="mt-6">
+              <ShareRow url={postUrl} title={post.title} />
+            </div>
           </Reveal>
         </div>
       </section>
@@ -121,6 +134,64 @@ export default async function BlogPostPage({
           <Markdown source={post.body ?? ""} />
         </div>
       </article>
+
+      {author?.bio ? (
+        <section className="pb-8">
+          <div className="max-w-[760px] mx-auto px-6 lg:px-10">
+            <div className="surface-card p-7 flex items-start gap-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-bg font-semibold flex-shrink-0">
+                {author.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .slice(0, 2)
+                  .join("")}
+              </div>
+              <div>
+                <div className="t-small text-fg">
+                  {author.name}
+                  {author.role ? (
+                    <span className="text-muted"> · {author.role}</span>
+                  ) : null}
+                </div>
+                <p className="t-small text-muted mt-2">{author.bio}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {newer || older ? (
+        <section className="pb-8">
+          <div className="max-w-[760px] mx-auto px-6 lg:px-10 grid sm:grid-cols-2 gap-4">
+            {older ? (
+              <Link
+                href={`/blog/${older.slug}`}
+                className="surface-card p-5 group hover:border-border-strong transition"
+              >
+                <span className="t-mono text-muted text-xs">← Older</span>
+                <div className="t-small text-fg mt-2 line-clamp-2 group-hover:text-brand-500 transition">
+                  {older.title}
+                </div>
+              </Link>
+            ) : (
+              <div className="hidden sm:block" />
+            )}
+            {newer ? (
+              <Link
+                href={`/blog/${newer.slug}`}
+                className="surface-card p-5 group hover:border-border-strong transition sm:text-right"
+              >
+                <span className="t-mono text-muted text-xs">Newer →</span>
+                <div className="t-small text-fg mt-2 line-clamp-2 group-hover:text-brand-500 transition">
+                  {newer.title}
+                </div>
+              </Link>
+            ) : (
+              <div className="hidden sm:block" />
+            )}
+          </div>
+        </section>
+      ) : null}
 
       {relatedPosts.length > 0 ? (
         <section className="py-24 lg:py-32">
