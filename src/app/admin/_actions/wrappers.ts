@@ -19,6 +19,7 @@ import * as misc from "./misc";
 import * as invoices from "./invoices";
 import * as crm from "./crm";
 import * as pm from "./pm";
+import * as monitor from "./monitor";
 
 export const upsertServiceAction = services.upsertService;
 export const deleteServiceAction = services.deleteService;
@@ -69,3 +70,8 @@ export const deletePmProjectAction = pm.deletePmProject;
 export const addPmTaskAction = pm.addPmTask;
 export const setPmTaskDoneAction = pm.setPmTaskDone;
 export const deletePmTaskAction = pm.deletePmTask;
+
+export const addMonitoredSiteAction = monitor.addMonitoredSite;
+export const deleteMonitoredSiteAction = monitor.deleteMonitoredSite;
+export const toggleMonitoredSiteAction = monitor.toggleMonitoredSite;
+export const runMonitorChecksNowAction = monitor.runMonitorChecksNow;

@@ -10,6 +10,7 @@ import {
   ChevronRight,
   FileText,
   GitBranch,
+  Globe,
   HelpCircle,
   Inbox,
   LayoutDashboard,
@@ -64,6 +65,7 @@ const sections: { label: string; items: NavItem[] }[] = [
     items: [
       { href: "/admin/pm", label: "Project tracker", icon: ListChecks },
       { href: "/admin/invoices", label: "Invoices", icon: Receipt },
+      { href: "/admin/monitor", label: "Website monitor", icon: Globe },
     ],
   },
   {
