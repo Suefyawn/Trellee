@@ -7,6 +7,7 @@ import {
   getTeamMembers,
 } from "@/lib/cms";
 import { Reveal } from "@/components/site/reveal";
+import { PostCover } from "@/components/site/post-cover";
 import { formatDate } from "@/lib/utils";
 
 export const metadata = {
@@ -101,7 +102,14 @@ export default async function BlogPage({
                   className="surface-card overflow-hidden block group hover:border-border-strong transition mb-16"
                 >
                   <div className="grid lg:grid-cols-12">
-                    <div className="lg:col-span-7 aspect-[16/9] lg:aspect-auto bg-gradient-to-br from-surface-2 to-bg" />
+                    <PostCover
+                      label={
+                        featured.category_id
+                          ? (catById.get(featured.category_id)?.name ?? null)
+                          : null
+                      }
+                      className="lg:col-span-7 aspect-[16/9] lg:aspect-auto"
+                    />
                     <div className="lg:col-span-5 p-8 lg:p-10 flex flex-col justify-center">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="badge badge-brand">Featured</span>
@@ -157,7 +165,7 @@ export default async function BlogPage({
                       href={`/blog/${post.slug}`}
                       className="surface-card overflow-hidden group hover:border-border-strong transition flex flex-col"
                     >
-                      <div className="aspect-[16/9] bg-gradient-to-br from-surface-2 to-bg" />
+                      <PostCover label={cat?.name} className="aspect-[16/9]" />
                       <div className="p-6 flex-1 flex flex-col">
                         {cat ? (
                           <span className="badge self-start">{cat.name}</span>
