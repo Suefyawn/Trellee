@@ -12,6 +12,7 @@ import {
 import { Reveal } from "@/components/site/reveal";
 import { ServiceIcon } from "@/components/site/service-icon";
 import { FAQAccordion } from "@/components/site/faq-accordion";
+import { JsonLd } from "@/components/seo/json-ld";
 
 export async function generateStaticParams() {
   const services = await getServices();
@@ -51,8 +52,35 @@ export default async function ServiceDetailPage({
 
   const featuredProject = relatedProjects[0];
 
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://trellee.vercel.app";
+  const serviceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: service.title,
+    ...(service.summary || service.hero_snippet
+      ? { description: service.summary ?? service.hero_snippet }
+      : {}),
+    ...(service.category ? { serviceType: service.category } : {}),
+    provider: { "@type": "Organization", name: "Trellee", url: siteUrl },
+    url: `${siteUrl}/services/${slug}`,
+  };
+  const faqSchema =
+    faqs.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqs.map((f) => ({
+            "@type": "Question",
+            name: f.question,
+            acceptedAnswer: { "@type": "Answer", text: f.answer },
+          })),
+        }
+      : null;
+
   return (
     <>
+      <JsonLd data={faqSchema ? [serviceSchema, faqSchema] : serviceSchema} />
       {/* HERO */}
       <section className="relative pt-16 pb-20 lg:pt-24 lg:pb-28 overflow-hidden">
         <div className="mesh" />
