@@ -55,7 +55,7 @@ export default async function HomePage() {
               Booking {settings.booking_quarter} · {settings.booking_slots_open} slots open
             </span>
             <span className="t-mono text-muted hidden sm:inline">
-              /{settings.city?.split(",")[0]?.toLowerCase()} · est. 2019
+              /{settings.city?.split(",")[0]?.toLowerCase()} · est. 2016
             </span>
           </Reveal>
 
@@ -96,12 +96,13 @@ export default async function HomePage() {
       </section>
 
       {/* ============================= CLIENT MARQUEE ============================= */}
+      {clients.length > 0 ? (
       <section className="py-12 border-y border-border bg-surface/40">
         <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
           <div className="flex items-center gap-6 mb-6">
-            <span className="mono-tag">Trusted by builders</span>
+            <span className="mono-tag">Trusted by</span>
             <span className="hidden md:inline t-small text-muted">
-              SMBs, startups, and one law firm that doesn&apos;t want us to name them
+              SMBs and startups across web, growth, and apps
             </span>
           </div>
           <div className="marquee">
@@ -119,6 +120,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      ) : null}
 
       {/* ============================= SERVICES BENTO ============================= */}
       <section id="services" className="py-24 lg:py-32 relative">
@@ -353,6 +355,7 @@ export default async function HomePage() {
       ) : null}
 
       {/* ============================= PROCESS ============================= */}
+      {processSteps.length > 0 ? (
       <section id="process" className="py-24 lg:py-32 relative">
         <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
           <div className="grid lg:grid-cols-12 gap-8 mb-16 items-end">
@@ -399,6 +402,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      ) : null}
 
       {/* ============================= REVIEWS ============================= */}
       <section className="py-24 lg:py-32 relative overflow-hidden">
@@ -414,8 +418,8 @@ export default async function HomePage() {
             </Reveal>
             <Reveal delay={1} className="lg:col-span-5">
               <p className="t-body-l text-muted">
-                27 reviews · 4.9 / 5 average · 68% of clients come back for a second
-                project.
+                Real Google reviews from the people we&apos;ve built for — on the
+                work, the price, and how fast we get back to them.
               </p>
             </Reveal>
           </div>
@@ -521,6 +525,7 @@ export default async function HomePage() {
               </ul>
             </Reveal>
 
+            {settings.stats.length > 0 ? (
             <Reveal delay={1} className="lg:col-span-5">
               <div className="surface-card p-7">
                 <div className="grid grid-cols-2 gap-4">
@@ -545,6 +550,7 @@ export default async function HomePage() {
                 </div>
               </div>
             </Reveal>
+            ) : null}
           </div>
         </div>
       </section>

@@ -60,9 +60,9 @@ export default async function AboutPage() {
             <Reveal className="mb-12">
               <span className="mono-tag">02 / Values</span>
               <h2 className="t-display-l mt-5 font-display">
-                Six things we believe.
+                The code
                 <br />
-                <span className="text-muted">Six things we hire for.</span>
+                <span className="text-muted">we live by.</span>
               </h2>
             </Reveal>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -83,6 +83,7 @@ export default async function AboutPage() {
       ) : null}
 
       {/* Stats */}
+      {settings.stats.length > 0 ? (
       <section className="py-24 lg:py-32 relative overflow-hidden">
         <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
         <div className="relative max-w-[1280px] mx-auto px-6 lg:px-10">
@@ -110,6 +111,7 @@ export default async function AboutPage() {
           </div>
         </div>
       </section>
+      ) : null}
 
       {team.length > 0 ? (
         <section className="py-24 lg:py-32">
