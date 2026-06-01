@@ -5,9 +5,22 @@ import { Calendar, Mail, MessageSquare, Save } from "lucide-react";
 import {
   updateCrmStageAction,
   updateCrmNotesAction,
+  updateCrmDealAction,
 } from "@/app/admin/_actions/wrappers";
 import type { CrmLead, CrmStage } from "@/lib/types/database";
-import { formatDate } from "@/lib/utils";
+import { formatDate, timeAgo } from "@/lib/utils";
+
+function money(n: number) {
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    }).format(n);
+  } catch {
+    return `$${n}`;
+  }
+}
 
 const STAGES: { key: CrmStage; label: string }[] = [
   { key: "new", label: "New" },
@@ -84,13 +97,24 @@ function LeadCard({
 }) {
   const [open, setOpen] = useState(false);
   const [notes, setNotes] = useState(lead.crm_notes ?? "");
+  const [value, setValue] = useState(
+    lead.deal_value != null ? String(lead.deal_value) : "",
+  );
+  const [reason, setReason] = useState(lead.outcome_reason ?? "");
   const [pending, startTransition] = useTransition();
   const [savedAt, setSavedAt] = useState<string | null>(null);
+  const isClosed = lead.pipeline_stage === "won" || lead.pipeline_stage === "lost";
 
-  function saveNotes() {
+  function saveAll() {
     startTransition(async () => {
-      const res = await updateCrmNotesAction(lead.source, lead.id, notes);
-      if (res.ok) setSavedAt(new Date().toLocaleTimeString());
+      await Promise.all([
+        updateCrmNotesAction(lead.source, lead.id, notes),
+        updateCrmDealAction(lead.source, lead.id, {
+          deal_value: value.trim() === "" ? null : Number(value),
+          outcome_reason: reason,
+        }),
+      ]);
+      setSavedAt(new Date().toLocaleTimeString());
     });
   }
 
@@ -105,14 +129,21 @@ function LeadCard({
             </div>
           ) : null}
         </div>
-        <span className="badge text-[9px] flex-shrink-0">
-          {lead.source === "booking" ? (
-            <Calendar className="w-3 h-3" />
-          ) : (
-            <MessageSquare className="w-3 h-3" />
-          )}
-          {lead.source}
-        </span>
+        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+          <span className="badge text-[9px]">
+            {lead.source === "booking" ? (
+              <Calendar className="w-3 h-3" />
+            ) : (
+              <MessageSquare className="w-3 h-3" />
+            )}
+            {lead.source}
+          </span>
+          {lead.deal_value != null ? (
+            <span className="badge badge-brand text-[9px]">
+              {money(lead.deal_value)}
+            </span>
+          ) : null}
+        </div>
       </div>
 
       <a
@@ -152,7 +183,31 @@ function LeadCard({
       </div>
 
       {open ? (
-        <div className="mt-3">
+        <div className="mt-3 space-y-2">
+          <label className="block">
+            <span className="t-mono text-muted text-[10px]">Est. value ($)</span>
+            <input
+              type="number"
+              min={0}
+              className="input text-xs mt-1"
+              placeholder="0"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+            />
+          </label>
+          {isClosed ? (
+            <label className="block">
+              <span className="t-mono text-muted text-[10px]">
+                {lead.pipeline_stage === "won" ? "Why won" : "Why lost"}
+              </span>
+              <input
+                className="input text-xs mt-1"
+                placeholder="Reason…"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
+            </label>
+          ) : null}
           <textarea
             className="textarea text-xs"
             rows={3}
@@ -160,14 +215,16 @@ function LeadCard({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
-          <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center justify-between">
             <span className="t-mono text-muted text-[10px]">
-              {formatDate(lead.created_at)}
+              {lead.crm_updated_at
+                ? `updated ${timeAgo(lead.crm_updated_at)}`
+                : formatDate(lead.created_at)}
               {savedAt ? ` · saved ${savedAt}` : ""}
             </span>
             <button
               type="button"
-              onClick={saveNotes}
+              onClick={saveAll}
               disabled={pending}
               className="btn btn-secondary text-xs py-1 disabled:opacity-60"
             >

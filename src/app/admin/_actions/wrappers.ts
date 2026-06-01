@@ -64,6 +64,7 @@ export const deleteInvoiceAction = invoices.deleteInvoice;
 
 export const updateCrmStageAction = crm.updateCrmStage;
 export const updateCrmNotesAction = crm.updateCrmNotes;
+export const updateCrmDealAction = crm.updateCrmDeal;
 
 export const upsertPmProjectAction = pm.upsertPmProject;
 export const deletePmProjectAction = pm.deletePmProject;
@@ -75,3 +76,4 @@ export const addMonitoredSiteAction = monitor.addMonitoredSite;
 export const deleteMonitoredSiteAction = monitor.deleteMonitoredSite;
 export const toggleMonitoredSiteAction = monitor.toggleMonitoredSite;
 export const runMonitorChecksNowAction = monitor.runMonitorChecksNow;
+export const sendTestMonitorAlertAction = monitor.sendTestMonitorAlert;

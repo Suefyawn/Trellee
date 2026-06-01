@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { runMonitorChecks } from "@/lib/monitor";
+import { sendMonitorAlert } from "@/lib/email";
 import { requireOwner } from "./guard";
 
 /** Normalize a user-typed URL to an absolute http(s) URL. */
@@ -55,4 +56,20 @@ export async function runMonitorChecksNow() {
   const result = await runMonitorChecks();
   revalidatePath("/admin/monitor");
   return { ok: true as const, ...result };
+}
+
+/**
+ * Send a one-off test alert to the owner so they can confirm email delivery is
+ * wired up correctly (verifies Resend config + the alert template).
+ */
+export async function sendTestMonitorAlert() {
+  await requireOwner();
+  await sendMonitorAlert({
+    label: "Test alert",
+    url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://trellee.com",
+    isUp: false,
+    statusCode: 503,
+    error: "This is a test alert from the Trellee admin. Delivery is working.",
+  });
+  return { ok: true as const };
 }

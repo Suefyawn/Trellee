@@ -2,12 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Plus, RefreshCw, Trash2 } from "lucide-react";
+import { Bell, Plus, RefreshCw, Trash2 } from "lucide-react";
 import {
   addMonitoredSiteAction,
   deleteMonitoredSiteAction,
   toggleMonitoredSiteAction,
   runMonitorChecksNowAction,
+  sendTestMonitorAlertAction,
 } from "@/app/admin/_actions/wrappers";
 import type { MonitoredSiteRow } from "@/lib/types/database";
 import { timeAgo } from "@/lib/utils";
@@ -20,6 +21,16 @@ export function MonitorPanel({ sites }: { sites: MonitoredSiteRow[] }) {
   const [msg, setMsg] = useState<string | null>(null);
   const [adding, startAdd] = useTransition();
   const [checking, startCheck] = useTransition();
+  const [testing, startTest] = useTransition();
+
+  function sendTest() {
+    setErr(null);
+    setMsg(null);
+    startTest(async () => {
+      const res = await sendTestMonitorAlertAction();
+      if (res.ok) setMsg("Test alert sent. Check the owner inbox (and spam).");
+    });
+  }
 
   function add(e: React.FormEvent) {
     e.preventDefault();
@@ -80,6 +91,16 @@ export function MonitorPanel({ sites }: { sites: MonitoredSiteRow[] }) {
           >
             <RefreshCw className={`w-4 h-4 ${checking ? "animate-spin" : ""}`} />
             {checking ? "Checking…" : "Check now"}
+          </button>
+          <button
+            type="button"
+            onClick={sendTest}
+            disabled={testing}
+            className="btn btn-secondary disabled:opacity-60"
+            title="Send a test down-alert to the owner email"
+          >
+            <Bell className="w-4 h-4" />
+            {testing ? "Sending…" : "Test alert"}
           </button>
         </form>
         {err ? <p className="t-small text-danger mt-3">{err}</p> : null}

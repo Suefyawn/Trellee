@@ -35,6 +35,23 @@ async function getCounts() {
   return counts;
 }
 
+async function getStatusStrip() {
+  if (!isSupabaseConfigured()) return null;
+  const sb = createSupabaseAdminClient();
+  const head = { count: "exact" as const, head: true };
+  const [active, down, newBookings, newLeads] = await Promise.all([
+    sb.from("monitored_sites").select("id", head).eq("active", true),
+    sb.from("monitored_sites").select("id", head).eq("active", true).eq("is_up", false),
+    sb.from("bookings").select("id", head).eq("pipeline_stage", "new"),
+    sb.from("contact_submissions").select("id", head).eq("pipeline_stage", "new"),
+  ]);
+  return {
+    sitesActive: active.count ?? 0,
+    sitesDown: down.count ?? 0,
+    newInbox: (newBookings.count ?? 0) + (newLeads.count ?? 0),
+  };
+}
+
 async function getRecentBookings(limit = 5) {
   if (!isSupabaseConfigured()) return [];
   const sb = createSupabaseAdminClient();
@@ -58,8 +75,9 @@ async function getRecentLeads(limit = 5) {
 }
 
 export default async function AdminDashboard() {
-  const [counts, bookings, leads] = await Promise.all([
+  const [counts, status, bookings, leads] = await Promise.all([
     getCounts(),
+    getStatusStrip(),
     getRecentBookings(),
     getRecentLeads(),
   ]);
@@ -122,6 +140,55 @@ export default async function AdminDashboard() {
               run <span className="t-mono">supabase/migrations/0001_init.sql</span>{" "}
               against your project, and restart the dev server.
             </p>
+          </div>
+        ) : null}
+
+        {status ? (
+          <div className="grid sm:grid-cols-2 gap-3 mb-6">
+            <Link
+              href="/admin/monitor"
+              className="surface-card p-5 flex items-center justify-between group hover:border-border-strong transition"
+            >
+              <div>
+                <div className="t-mono text-muted text-[11px] uppercase tracking-wider">
+                  Site monitor
+                </div>
+                <div
+                  className={`font-display text-2xl mt-2 ${
+                    status.sitesDown > 0 ? "text-danger" : ""
+                  }`}
+                >
+                  {status.sitesDown > 0
+                    ? `${status.sitesDown} down`
+                    : status.sitesActive > 0
+                      ? `All ${status.sitesActive} operational`
+                      : "No sites yet"}
+                </div>
+              </div>
+              <span
+                className="w-2.5 h-2.5 rounded-full"
+                style={{
+                  background:
+                    status.sitesDown > 0
+                      ? "var(--color-danger)"
+                      : "var(--color-brand-500)",
+                }}
+              />
+            </Link>
+            <Link
+              href="/admin/crm"
+              className="surface-card p-5 flex items-center justify-between group hover:border-border-strong transition"
+            >
+              <div>
+                <div className="t-mono text-muted text-[11px] uppercase tracking-wider">
+                  Inbox · needs attention
+                </div>
+                <div className="font-display text-2xl mt-2">
+                  {status.newInbox} new
+                </div>
+              </div>
+              <Inbox className="w-5 h-5 text-muted" />
+            </Link>
           </div>
         ) : null}
 

@@ -224,6 +224,9 @@ export type BookingRow = {
   status: "new" | "contacted" | "scheduled" | "won" | "lost" | "cancelled";
   pipeline_stage: CrmStage;
   crm_notes: string | null;
+  deal_value: number | null;
+  outcome_reason: string | null;
+  crm_updated_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -240,6 +243,9 @@ export type ContactSubmissionRow = {
   status: "new" | "contacted" | "closed" | "spam";
   pipeline_stage: CrmStage;
   crm_notes: string | null;
+  deal_value: number | null;
+  outcome_reason: string | null;
+  crm_updated_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -264,6 +270,9 @@ export type CrmLead = {
   meta: string | null; // budget/services (contact) or time slot (booking)
   pipeline_stage: CrmStage;
   crm_notes: string | null;
+  deal_value: number | null;
+  outcome_reason: string | null;
+  crm_updated_at: string | null;
   created_at: string;
 };
 
