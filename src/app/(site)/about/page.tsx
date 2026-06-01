@@ -205,32 +205,71 @@ export default async function AboutPage() {
             <Reveal className="mb-12">
               <span className="mono-tag">04 / Team</span>
               <h2 className="t-display-l mt-5 font-display">
-                Twelve humans.
+                Founder-led.
                 <br />
-                <span className="text-muted">No outsourced second shift.</span>
+                <span className="text-muted">Senior on every build.</span>
               </h2>
             </Reveal>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div
+              className={
+                team.length === 1
+                  ? "grid lg:grid-cols-3 gap-4"
+                  : "grid md:grid-cols-2 lg:grid-cols-4 gap-4"
+              }
+            >
               {team.map((t) => (
-                <div key={t.id} className="surface-card p-6">
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-surface-2 to-bg mb-5 flex items-center justify-center">
-                    <span className="font-display text-4xl text-muted">
-                      {t.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .slice(0, 2)
-                        .join("")}
-                    </span>
+                <Reveal key={t.id} className="surface-card p-7">
+                  <div className="aspect-square rounded-lg bg-gradient-to-br from-surface-2 to-bg mb-5 flex items-center justify-center overflow-hidden">
+                    {t.avatar_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={t.avatar_url}
+                        alt={t.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="font-display text-4xl text-muted">
+                        {t.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .slice(0, 2)
+                          .join("")}
+                      </span>
+                    )}
                   </div>
                   <h3 className="t-heading-l font-display">{t.name}</h3>
                   {t.role ? (
                     <div className="t-mono text-muted text-xs mt-1">{t.role}</div>
                   ) : null}
                   {t.bio ? (
-                    <p className="t-small text-muted mt-3 line-clamp-3">{t.bio}</p>
+                    <p
+                      className={`t-small text-muted mt-3 ${
+                        team.length === 1 ? "" : "line-clamp-3"
+                      }`}
+                    >
+                      {t.bio}
+                    </p>
                   ) : null}
-                </div>
+                </Reveal>
               ))}
+              {team.length === 1 ? (
+                <Reveal
+                  delay={1}
+                  className="surface-card p-7 lg:col-span-2 flex flex-col justify-center"
+                >
+                  <span className="mono-tag text-brand-500">Why that matters</span>
+                  <p className="t-body-l mt-4">
+                    The person who scopes your project is the person who builds it.
+                    No account-manager telephone game, no junior B-team quietly
+                    handed the work once the contract&apos;s signed.
+                  </p>
+                  <p className="t-body text-muted mt-4">
+                    When the work needs more hands, we bring in trusted specialists
+                    — but the strategy, the architecture, and the relationship stay
+                    with one person, start to finish.
+                  </p>
+                </Reveal>
+              ) : null}
             </div>
           </div>
         </section>
