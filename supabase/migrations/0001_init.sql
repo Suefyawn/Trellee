@@ -12,6 +12,7 @@ create extension if not exists "pgcrypto";
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
+set search_path = ''
 as $$
 begin
   new.updated_at = now();
@@ -507,16 +508,10 @@ insert into storage.buckets (id, name, public)
   values ('videos','videos',true)
   on conflict (id) do nothing;
 
--- Public read on both buckets
-drop policy if exists "public read media" on storage.objects;
-create policy "public read media"
-  on storage.objects for select
-  using (bucket_id = 'media');
-
-drop policy if exists "public read videos" on storage.objects;
-create policy "public read videos"
-  on storage.objects for select
-  using (bucket_id = 'videos');
+-- NOTE: public buckets serve objects via their public URL WITHOUT an RLS
+-- SELECT policy. A broad "public read" select policy only adds object listing/
+-- enumeration (Supabase advisor 0025), so we intentionally do not create one.
+-- Admin uploads go through the service-role client, which bypasses RLS.
 
 -- Authenticated users can write — admin server actions use service role anyway,
 -- but this allows direct uploads from the admin UI via the user's session.
