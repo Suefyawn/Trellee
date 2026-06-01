@@ -292,6 +292,31 @@ export type InvoiceRow = {
   updated_at: string;
 };
 
+// ---------------------------------------------------------------- Project tracker
+export type PmProjectRow = {
+  id: string;
+  name: string;
+  client_name: string | null;
+  client_email: string | null;
+  status: "active" | "on_hold" | "done" | "archived";
+  description: string | null;
+  due_date: string | null;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PmTaskRow = {
+  id: string;
+  project_id: string;
+  title: string;
+  done: boolean;
+  due_date: string | null;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
 export type SiteSettingsRow = {
   id: 1;
   company_name: string;
@@ -351,6 +376,8 @@ export type Database = {
       bookings: SelectInsertUpdate<BookingRow>;
       contact_submissions: SelectInsertUpdate<ContactSubmissionRow>;
       invoices: SelectInsertUpdate<InvoiceRow>;
+      pm_projects: SelectInsertUpdate<PmProjectRow>;
+      pm_tasks: SelectInsertUpdate<PmTaskRow>;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

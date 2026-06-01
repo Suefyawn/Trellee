@@ -18,6 +18,7 @@ import * as leads from "./leads";
 import * as misc from "./misc";
 import * as invoices from "./invoices";
 import * as crm from "./crm";
+import * as pm from "./pm";
 
 export const upsertServiceAction = services.upsertService;
 export const deleteServiceAction = services.deleteService;
@@ -62,3 +63,9 @@ export const deleteInvoiceAction = invoices.deleteInvoice;
 
 export const updateCrmStageAction = crm.updateCrmStage;
 export const updateCrmNotesAction = crm.updateCrmNotes;
+
+export const upsertPmProjectAction = pm.upsertPmProject;
+export const deletePmProjectAction = pm.deletePmProject;
+export const addPmTaskAction = pm.addPmTask;
+export const setPmTaskDoneAction = pm.setPmTaskDone;
+export const deletePmTaskAction = pm.deletePmTask;
