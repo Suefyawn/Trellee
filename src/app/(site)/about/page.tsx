@@ -82,6 +82,92 @@ export default async function AboutPage() {
         </section>
       ) : null}
 
+      {/* How we work — communication-first differentiators */}
+      <section className="py-24 lg:py-32">
+        <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
+          <Reveal className="mb-12">
+            <span className="mono-tag">Communication</span>
+            <h2 className="t-display-l mt-5 font-display">
+              It&apos;s kind of
+              <br />
+              <span className="text-muted">our thing.</span>
+            </h2>
+          </Reveal>
+          <div className="grid md:grid-cols-3 gap-4">
+            {[
+              {
+                title: "Listen first, sell never",
+                body: "Your project is an investment. Our job is to help you weigh your options and make your best choice — not pitch you the thing we happen to sell.",
+              },
+              {
+                title: "Fluent in human and tech-speak",
+                body: "Integrations, redirects, the jargon — we translate it (unless you speak the language), so you always know exactly what we're working on and why.",
+              },
+              {
+                title: "Lightning-fast responses",
+                body: "A dedicated point of contact for your whole build, and replies measured in hours — often minutes — not days.",
+              },
+            ].map((c, i) => (
+              <Reveal
+                key={c.title}
+                delay={((i % 3) + 1) as 1 | 2 | 3}
+                className="surface-card p-7"
+              >
+                <h3 className="t-heading-l font-display">{c.title}</h3>
+                <p className="t-body text-muted mt-3">{c.body}</p>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Who we're a fit for */}
+      <section className="py-24 lg:py-32">
+        <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
+          <Reveal className="mb-12">
+            <span className="mono-tag">A good fit</span>
+            <h2 className="t-display-l mt-5 font-display">
+              We&apos;re a match if&hellip;
+            </h2>
+          </Reveal>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Reveal className="surface-card p-8">
+              <span className="mono-tag text-brand-500">You&apos;ll love us if you</span>
+              <ul className="mt-5 space-y-3">
+                {[
+                  "Value technical skill that sets you up for later, not just now",
+                  "Have been burned before by developers who didn't deliver",
+                  "Like frequent updates and same-day responses",
+                ].map((t) => (
+                  <li key={t} className="flex items-start gap-3 t-body">
+                    <span className="text-brand-500 mt-0.5">✓</span>
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+            </Reveal>
+            <Reveal delay={1} className="surface-card p-8">
+              <span className="mono-tag text-muted">Probably not if you</span>
+              <ul className="mt-5 space-y-3">
+                {[
+                  "Want an off-the-shelf, cookie-cutter solution",
+                  "Want order-takers who don't ask questions or give advice",
+                  "Only want to hear from us when we send the bill",
+                ].map((t) => (
+                  <li
+                    key={t}
+                    className="flex items-start gap-3 t-body text-muted"
+                  >
+                    <span className="mt-0.5">·</span>
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
       {/* Stats */}
       {settings.stats.length > 0 ? (
       <section className="py-24 lg:py-32 relative overflow-hidden">
