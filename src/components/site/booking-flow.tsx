@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, Calendar, Check, Clock } from "lucide-react";
 import type { ServiceRow } from "@/lib/types/database";
 import { submitBooking } from "@/app/actions/booking";
+import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import { ServiceIcon } from "./service-icon";
 
@@ -100,6 +101,7 @@ export function BookingFlow({
         notes: details.notes || undefined,
       });
       if (res.ok) {
+        track("booking_submitted", { service: serviceSlug ?? "unsure" });
         setDone({ id: res.id });
         setStep("confirm");
       } else {
