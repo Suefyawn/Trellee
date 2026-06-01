@@ -8,6 +8,7 @@ import {
   getReviews,
 } from "@/lib/cms";
 import { Reveal } from "@/components/site/reveal";
+import { VideoReview } from "@/components/site/video-review";
 
 export async function generateStaticParams() {
   const projects = await getProjects();
@@ -223,32 +224,58 @@ export default async function CaseStudyPage({
         </section>
       ) : null}
 
-      {/* TESTIMONIAL */}
-      {review ? (
+      {/* TESTIMONIAL — video if the linked review is a video, else a quote */}
+      {review && (review.video_url || review.quote) ? (
         <section className="py-24 lg:py-32">
           <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
-            <Reveal className="surface-card p-10 lg:p-14 max-w-4xl mx-auto">
+            <Reveal className="surface-card p-8 lg:p-12 max-w-4xl mx-auto">
               <Star className="w-6 h-6 text-brand-500 fill-brand-500" />
-              <blockquote className="t-heading-xl font-display mt-6">
-                {review.quote ?? "We&apos;d work with Trellee on the next one."}
-              </blockquote>
-              <div className="flex items-center gap-3 mt-8 pt-6 border-t border-border">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-bg font-semibold">
-                  {review.author_name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .slice(0, 2)
-                    .join("")}
-                </div>
-                <div>
-                  <div className="t-small text-fg">{review.author_name}</div>
-                  <div className="t-mono text-muted text-xs">
-                    {[review.author_role, review.author_company]
-                      .filter(Boolean)
-                      .join(" · ")}
+              {review.type === "video" && review.video_url ? (
+                <div className="mt-6 grid sm:grid-cols-[minmax(0,240px)_1fr] gap-8 sm:items-center">
+                  <div className="max-w-[240px] w-full">
+                    <VideoReview
+                      src={review.video_url}
+                      name={review.author_name}
+                      role={review.author_role}
+                      company={review.author_company}
+                      duration={review.duration}
+                    />
+                  </div>
+                  <div>
+                    <p className="t-heading-xl font-display">
+                      Straight from the client.
+                    </p>
+                    <div className="t-mono text-muted text-xs mt-3">
+                      {[review.author_name, review.author_company]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <>
+                  <blockquote className="t-heading-xl font-display mt-6">
+                    {review.quote}
+                  </blockquote>
+                  <div className="flex items-center gap-3 mt-8 pt-6 border-t border-border">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-bg font-semibold">
+                      {review.author_name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .slice(0, 2)
+                        .join("")}
+                    </div>
+                    <div>
+                      <div className="t-small text-fg">{review.author_name}</div>
+                      <div className="t-mono text-muted text-xs">
+                        {[review.author_role, review.author_company]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </Reveal>
           </div>
         </section>
