@@ -35,6 +35,9 @@ async function loadLeads(): Promise<CrmLead[]> {
         .join(" · ") || null,
       pipeline_stage: c.pipeline_stage ?? "new",
       crm_notes: c.crm_notes,
+      deal_value: c.deal_value,
+      outcome_reason: c.outcome_reason,
+      crm_updated_at: c.crm_updated_at,
       created_at: c.created_at,
     }),
   );
@@ -54,6 +57,9 @@ async function loadLeads(): Promise<CrmLead[]> {
       .join(" · ") || null,
     pipeline_stage: b.pipeline_stage ?? "new",
     crm_notes: b.crm_notes,
+    deal_value: b.deal_value,
+    outcome_reason: b.outcome_reason,
+    crm_updated_at: b.crm_updated_at,
     created_at: b.created_at,
   }));
 

@@ -268,6 +268,10 @@ export function BookingFlow({
               <Clock className="w-4 h-4" /> 30 minutes ·{" "}
               <span className="t-mono">{tz}</span>
             </p>
+            <p className="t-small text-muted mt-2">
+              Pick a preferred slot and we&apos;ll confirm the exact time by email,
+              usually within a few hours.
+            </p>
 
             <div className="mt-8">
               <span className="mono-tag mb-3 inline-flex">Pick a day</span>
