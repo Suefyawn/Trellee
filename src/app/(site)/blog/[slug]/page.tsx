@@ -101,6 +101,21 @@ export default async function BlogPostPage({
         </div>
       </section>
 
+      {post.cover_url ? (
+        <section className="pb-4 lg:pb-8">
+          <div className="max-w-[1000px] mx-auto px-6 lg:px-10">
+            <Reveal className="surface-card overflow-hidden aspect-[16/9]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={post.cover_url}
+                alt={post.title}
+                className="w-full h-full object-cover"
+              />
+            </Reveal>
+          </div>
+        </section>
+      ) : null}
+
       <article className="py-12 lg:py-16">
         <div className="max-w-[760px] mx-auto px-6 lg:px-10">
           <Markdown source={post.body ?? ""} />

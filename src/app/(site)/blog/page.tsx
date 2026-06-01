@@ -102,14 +102,25 @@ export default async function BlogPage({
                   className="surface-card overflow-hidden block group hover:border-border-strong transition mb-16"
                 >
                   <div className="grid lg:grid-cols-12">
-                    <PostCover
-                      label={
-                        featured.category_id
-                          ? (catById.get(featured.category_id)?.name ?? null)
-                          : null
-                      }
-                      className="lg:col-span-7 aspect-[16/9] lg:aspect-auto"
-                    />
+                    {featured.cover_url ? (
+                      <div className="lg:col-span-7 relative aspect-[16/9] lg:aspect-auto overflow-hidden bg-surface-2">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={featured.cover_url}
+                          alt={featured.title}
+                          className="absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-[1.02]"
+                        />
+                      </div>
+                    ) : (
+                      <PostCover
+                        label={
+                          featured.category_id
+                            ? (catById.get(featured.category_id)?.name ?? null)
+                            : null
+                        }
+                        className="lg:col-span-7 aspect-[16/9] lg:aspect-auto"
+                      />
+                    )}
                     <div className="lg:col-span-5 p-8 lg:p-10 flex flex-col justify-center">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="badge badge-brand">Featured</span>
@@ -165,7 +176,19 @@ export default async function BlogPage({
                       href={`/blog/${post.slug}`}
                       className="surface-card overflow-hidden group hover:border-border-strong transition flex flex-col"
                     >
-                      <PostCover label={cat?.name} className="aspect-[16/9]" />
+                      {post.cover_url ? (
+                        <div className="relative aspect-[16/9] overflow-hidden bg-surface-2">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={post.cover_url}
+                            alt={post.title}
+                            loading="lazy"
+                            className="absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                          />
+                        </div>
+                      ) : (
+                        <PostCover label={cat?.name} className="aspect-[16/9]" />
+                      )}
                       <div className="p-6 flex-1 flex flex-col">
                         {cat ? (
                           <span className="badge self-start">{cat.name}</span>
