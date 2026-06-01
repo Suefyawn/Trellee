@@ -11,7 +11,7 @@
  */
 
 import "server-only";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabasePublicClient } from "@/lib/supabase/server";
 import * as demo from "./demo-data";
 import type {
   ActivityFeedRow,
@@ -39,7 +39,7 @@ function isSupabaseConfigured() {
 }
 
 async function query<T>(
-  fn: (sb: Awaited<ReturnType<typeof createSupabaseServerClient>>) => Promise<{
+  fn: (sb: ReturnType<typeof createSupabasePublicClient>) => Promise<{
     data: T | null;
     error: { message: string } | null;
   }>,
@@ -48,7 +48,7 @@ async function query<T>(
 ): Promise<T> {
   if (!isSupabaseConfigured()) return fallback;
   try {
-    const sb = await createSupabaseServerClient();
+    const sb = createSupabasePublicClient();
     const { data, error } = await fn(sb);
     if (error) {
       console.warn(`[cms:${label}]`, error.message);

@@ -34,6 +34,21 @@ export async function createSupabaseServerClient() {
 }
 
 /**
+ * Cookie-less anon client for PUBLIC reads (the marketing site + sitemap +
+ * generateStaticParams). Public CMS content is readable by the anon role via
+ * RLS, so no session/cookies are needed — and crucially, avoiding cookies()
+ * lets these run during build-time static generation without throwing
+ * "cookies was called outside a request scope".
+ */
+export function createSupabasePublicClient() {
+  return createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  );
+}
+
+/**
  * Service-role client for admin server actions. Bypasses RLS.
  * NEVER expose this client to the browser.
  */
