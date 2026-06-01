@@ -17,9 +17,16 @@ export function LeadsTable({ initial }: { initial: ContactSubmissionRow[] }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [filter, setFilter] = useState<ContactSubmissionRow["status"] | "all">("all");
+  const [query, setQuery] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
 
-  const filtered = initial.filter((b) => filter === "all" || b.status === filter);
+  const q = query.trim().toLowerCase();
+  const filtered = initial.filter(
+    (b) =>
+      (filter === "all" || b.status === filter) &&
+      (!q ||
+        `${b.name} ${b.email} ${b.company ?? ""}`.toLowerCase().includes(q)),
+  );
 
   function updateStatus(l: ContactSubmissionRow, status: ContactSubmissionRow["status"]) {
     startTransition(async () => {
@@ -30,7 +37,8 @@ export function LeadsTable({ initial }: { initial: ContactSubmissionRow[] }) {
 
   return (
     <>
-      <div className="flex items-center gap-1 mb-4 flex-wrap">
+      <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+        <div className="flex items-center gap-1 flex-wrap">
         {(["all", ...STATUSES] as const).map((s) => (
           <button
             key={s}
@@ -51,6 +59,15 @@ export function LeadsTable({ initial }: { initial: ContactSubmissionRow[] }) {
             ) : null}
           </button>
         ))}
+        </div>
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search name, email, company…"
+          aria-label="Search leads"
+          className="input py-2 w-full sm:w-64"
+        />
       </div>
 
       <div className="surface-card overflow-x-auto">

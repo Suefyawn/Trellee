@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getServices } from "@/lib/cms";
 import { AdminPageBody, AdminPageHeader } from "@/components/admin/admin-page";
+import { TableFilter } from "@/components/admin/table-filter";
 
 export const dynamic = "force-dynamic";
 
@@ -13,9 +14,12 @@ export default async function AdminServicesPage() {
         title="Services"
         description="The 10 disciplines shown on the homepage bento + /services. Tile size and order control the homepage layout."
         actions={
-          <Link href="/admin/services/new" className="btn btn-primary">
-            <Plus className="w-4 h-4" /> New service
-          </Link>
+          <div className="flex items-center gap-2">
+            <TableFilter targetId="services-list" placeholder="Filter services…" />
+            <Link href="/admin/services/new" className="btn btn-primary">
+              <Plus className="w-4 h-4" /> New service
+            </Link>
+          </div>
         }
       />
       <AdminPageBody>
@@ -31,10 +35,11 @@ export default async function AdminServicesPage() {
                 <th className="text-left p-4 font-normal">Featured</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="services-list">
               {services.map((s) => (
                 <tr
                   key={s.id}
+                  data-row
                   className="border-t border-border hover:bg-surface-2/40 transition"
                 >
                   <td className="p-4">
@@ -58,6 +63,11 @@ export default async function AdminServicesPage() {
                   </td>
                 </tr>
               ))}
+              <tr id="services-list-empty" style={{ display: "none" }} className="border-t border-border">
+                <td colSpan={6} className="p-4 text-center text-muted t-small">
+                  No matches.
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
