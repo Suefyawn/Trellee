@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { AdminPageBody, AdminPageHeader } from "@/components/admin/admin-page";
+import { TableFilter } from "@/components/admin/table-filter";
 import { demoBlogCategories, demoBlogPosts } from "@/lib/cms/demo-data";
 import type { BlogCategoryRow, BlogPostRow } from "@/lib/types/database";
 import { formatDate } from "@/lib/utils";
@@ -38,7 +39,8 @@ export default async function AdminBlogPostsPage() {
         title="Blog posts"
         description="Markdown-friendly long-form notes. Drafts are hidden from the public site."
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <TableFilter targetId="posts-list" placeholder="Filter posts…" />
             <Link
               href="/admin/blog/categories"
               className="btn btn-secondary"
@@ -63,10 +65,11 @@ export default async function AdminBlogPostsPage() {
                 <th className="text-left p-4 font-normal">Featured</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="posts-list">
               {posts.map((p) => (
                 <tr
                   key={p.id}
+                  data-row
                   className="border-t border-border hover:bg-surface-2/40 transition"
                 >
                   <td className="p-4">
@@ -98,6 +101,11 @@ export default async function AdminBlogPostsPage() {
                   </td>
                 </tr>
               ))}
+              <tr id="posts-list-empty" style={{ display: "none" }} className="border-t border-border">
+                <td colSpan={5} className="p-4 text-center text-muted t-small">
+                  No matches.
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
