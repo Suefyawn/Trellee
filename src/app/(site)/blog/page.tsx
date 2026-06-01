@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import {
   getBlogCategories,
   getBlogPosts,
@@ -8,6 +7,7 @@ import {
 } from "@/lib/cms";
 import { Reveal } from "@/components/site/reveal";
 import { PostCover } from "@/components/site/post-cover";
+import { NewsletterForm } from "@/components/site/newsletter-form";
 import { formatDate } from "@/lib/utils";
 
 export const metadata = {
@@ -244,22 +244,7 @@ export default async function BlogPage({
               <p className="t-body-l text-muted mt-5 max-w-xl mx-auto">
                 {settings.newsletter_subheading}
               </p>
-              <form
-                className="mt-8 flex gap-2 max-w-md mx-auto"
-                action="/contact"
-                method="get"
-              >
-                <input
-                  type="email"
-                  name="email"
-                  className="input"
-                  placeholder="you@company.com"
-                  required
-                />
-                <button type="submit" className="btn btn-primary">
-                  Subscribe <ArrowUpRight className="w-4 h-4" />
-                </button>
-              </form>
+              <NewsletterForm source="blog" />
             </div>
           </div>
         </div>

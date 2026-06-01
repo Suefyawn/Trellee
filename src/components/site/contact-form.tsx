@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { ArrowRight, Check } from "lucide-react";
 import type { ServiceRow } from "@/lib/types/database";
 import { submitContact } from "@/app/actions/contact";
+import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 const BUDGETS = ["< $10k", "$10k-25k", "$25k-50k", "$50k-100k", "$100k+", "Not sure"];
@@ -40,6 +41,10 @@ export function ContactForm({ services }: { services: ServiceRow[] }) {
         message: form.message,
       });
       if (res.ok) {
+        track("contact_submitted", {
+          budget: form.budget || undefined,
+          services: picked.length,
+        });
         setSent(true);
       } else {
         setError(res.error);

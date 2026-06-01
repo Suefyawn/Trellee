@@ -364,6 +364,13 @@ export type SiteSettingsRow = {
   updated_at: string;
 };
 
+export type NewsletterSubscriberRow = {
+  id: string;
+  email: string;
+  source: string | null;
+  created_at: string;
+};
+
 type SelectInsertUpdate<R> = {
   Row: R;
   Insert: { [K in keyof R]?: R[K] };
@@ -394,6 +401,7 @@ export type Database = {
       pm_projects: SelectInsertUpdate<PmProjectRow>;
       pm_tasks: SelectInsertUpdate<PmTaskRow>;
       monitored_sites: SelectInsertUpdate<MonitoredSiteRow>;
+      newsletter_subscribers: SelectInsertUpdate<NewsletterSubscriberRow>;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

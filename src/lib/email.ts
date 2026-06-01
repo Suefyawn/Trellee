@@ -353,6 +353,42 @@ export async function sendMonitorAlert(p: MonitorAlertPayload) {
   );
 }
 
+// ---------- Newsletter ----------
+
+/**
+ * On a newsletter signup: optionally add the contact to a Resend audience
+ * (if RESEND_AUDIENCE_ID is set) and notify the owner. The DB row is the
+ * source of truth; this is best-effort and never throws.
+ */
+export async function notifyNewsletterSignup(email: string, source?: string) {
+  const cfg = getEmailConfig();
+  if (!cfg) {
+    console.info("[email] newsletter signup (not configured):", email);
+    return;
+  }
+  const audienceId = process.env.RESEND_AUDIENCE_ID;
+  if (audienceId) {
+    await safeSend("newsletter audience add", () =>
+      cfg.resend.contacts.create({ email, audienceId, unsubscribed: false }),
+    );
+  }
+  await safeSend("newsletter admin notification", () =>
+    cfg.resend.emails.send({
+      from: cfg.from,
+      to: cfg.adminTo,
+      replyTo: email,
+      subject: `New subscriber · ${email}`,
+      html: layout(
+        "New newsletter subscriber",
+        `${row("Email", `<a href="mailto:${esc(email)}">${esc(email)}</a>`)}${
+          source ? row("Source", esc(source)) : ""
+        }`,
+      ),
+      text: `New subscriber: ${email}${source ? `\nSource: ${source}` : ""}`,
+    }),
+  );
+}
+
 // ---------- helpers ----------
 
 /**
