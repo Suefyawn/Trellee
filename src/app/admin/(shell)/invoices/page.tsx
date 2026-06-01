@@ -59,8 +59,8 @@ export default async function AdminInvoicesPage() {
             </Link>
           </div>
         ) : (
-          <div className="surface-card overflow-hidden">
-            <table className="w-full t-small">
+          <div className="surface-card overflow-x-auto">
+            <table className="w-full min-w-[640px] t-small">
               <thead>
                 <tr className="bg-surface-2/60 t-mono text-muted text-xs uppercase tracking-wider">
                   <th className="text-left p-4 font-normal">Number</th>
