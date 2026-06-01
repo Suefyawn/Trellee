@@ -22,12 +22,26 @@ export default async function BlogPage({
   searchParams: Promise<{ category?: string }>;
 }) {
   const params = await searchParams;
-  const [categories, posts, team, settings] = await Promise.all([
+  const [categories, allPosts, team, settings] = await Promise.all([
     getBlogCategories(),
-    getBlogPosts({ categorySlug: params.category }),
+    getBlogPosts(),
     getTeamMembers(),
     getSiteSettings(),
   ]);
+
+  // Only surface category filters that actually have posts, so empty
+  // categories don't show as dead-end filter chips.
+  const usedCategoryIds = new Set(
+    allPosts.map((p) => p.category_id).filter(Boolean),
+  );
+  const visibleCategories = categories.filter((c) => usedCategoryIds.has(c.id));
+
+  const activeCategory = params.category
+    ? categories.find((c) => c.slug === params.category)
+    : undefined;
+  const posts = activeCategory
+    ? allPosts.filter((p) => p.category_id === activeCategory.id)
+    : allPosts;
 
   const featured = posts.find((p) => p.featured) ?? posts[0];
   const rest = posts.filter((p) => p.id !== featured?.id);
@@ -69,7 +83,7 @@ export default async function BlogPage({
             >
               All notes
             </Link>
-            {categories.map((c) => (
+            {visibleCategories.map((c) => (
               <Link
                 key={c.id}
                 href={`/blog?category=${c.slug}`}
