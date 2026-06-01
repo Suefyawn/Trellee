@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Save } from "lucide-react";
+import { useUnsavedChanges } from "@/lib/use-unsaved-changes";
 import { upsertServiceAction } from "@/app/admin/_actions/wrappers";
 import type { ServiceRow } from "@/lib/types/database";
 import { slugify } from "@/lib/utils";
@@ -41,8 +42,12 @@ export function ServiceForm({ initial }: { initial?: ServiceRow }) {
   );
   const [deliverables, setDeliverables] = useState(initial?.deliverables ?? []);
 
+  const [dirty, setDirty] = useState(false);
+  useUnsavedChanges(dirty);
+
   function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+    setDirty(true);
   }
 
   function submit(e: React.FormEvent) {
@@ -79,6 +84,7 @@ export function ServiceForm({ initial }: { initial?: ServiceRow }) {
         return;
       }
       setSaved(true);
+      setDirty(false);
       if (!initial?.id && res.id) {
         router.push(`/admin/services/${res.id}`);
       } else {

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowRight, ArrowUpRight, Star } from "lucide-react";
 import {
@@ -107,12 +108,14 @@ export default async function CaseStudyPage({
       {project.cover_url ? (
         <section className="pb-8 lg:pb-12">
           <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
-            <Reveal className="surface-card overflow-hidden aspect-[16/10] md:aspect-[16/9]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+            <Reveal className="surface-card overflow-hidden aspect-[16/10] md:aspect-[16/9] relative">
+              <Image
                 src={project.cover_url}
                 alt={`${project.title} website`}
-                className="w-full h-full object-cover object-top"
+                fill
+                sizes="(max-width: 1280px) 100vw, 1200px"
+                priority
+                className="object-cover object-top"
               />
             </Reveal>
           </div>
