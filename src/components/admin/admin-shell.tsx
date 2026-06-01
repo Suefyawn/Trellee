@@ -13,6 +13,7 @@ import {
   HelpCircle,
   Inbox,
   LayoutDashboard,
+  ListChecks,
   LogOut,
   Menu,
   MessageSquare,
@@ -60,7 +61,10 @@ const sections: { label: string; items: NavItem[] }[] = [
   },
   {
     label: "Business",
-    items: [{ href: "/admin/invoices", label: "Invoices", icon: Receipt }],
+    items: [
+      { href: "/admin/pm", label: "Project tracker", icon: ListChecks },
+      { href: "/admin/invoices", label: "Invoices", icon: Receipt },
+    ],
   },
   {
     label: "Studio",
