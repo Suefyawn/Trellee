@@ -100,13 +100,28 @@ export function AdminShell({
     setDrawerOpen(false);
   }, [pathname]);
 
-  // Lock body scroll when drawer is open (mobile)
+  // Robust scroll lock (mobile): pin the body and restore scroll position on
+  // close, so the viewport doesn't break when the drawer is opened mid-scroll.
   useEffect(() => {
     if (!drawerOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const y = window.scrollY;
+    const body = document.body;
+    const prev = {
+      position: body.style.position,
+      top: body.style.top,
+      width: body.style.width,
+      overflow: body.style.overflow,
+    };
+    body.style.position = "fixed";
+    body.style.top = `-${y}px`;
+    body.style.width = "100%";
+    body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = prev;
+      body.style.position = prev.position;
+      body.style.top = prev.top;
+      body.style.width = prev.width;
+      body.style.overflow = prev.overflow;
+      window.scrollTo(0, y);
     };
   }, [drawerOpen]);
 

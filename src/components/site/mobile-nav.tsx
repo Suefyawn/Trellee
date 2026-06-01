@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import { Logo } from "./logo";
 import { cn } from "@/lib/utils";
@@ -17,20 +18,40 @@ const navItems = [
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+
+  // Portal target only exists on the client.
+  useEffect(() => setMounted(true), []);
 
   // Close drawer on route change
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
 
-  // Lock body scroll when open
+  // Robust scroll lock: pin the body so the background can't scroll, and
+  // restore the exact scroll position on close. The naive `overflow: hidden`
+  // approach lets Android Chrome jump/break the viewport when opened mid-scroll.
   useEffect(() => {
     if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const y = window.scrollY;
+    const body = document.body;
+    const prev = {
+      position: body.style.position,
+      top: body.style.top,
+      width: body.style.width,
+      overflow: body.style.overflow,
+    };
+    body.style.position = "fixed";
+    body.style.top = `-${y}px`;
+    body.style.width = "100%";
+    body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = prev;
+      body.style.position = prev.position;
+      body.style.top = prev.top;
+      body.style.width = prev.width;
+      body.style.overflow = prev.overflow;
+      window.scrollTo(0, y);
     };
   }, [open]);
 
@@ -44,34 +65,23 @@ export function MobileNav() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  return (
+  // Overlay + drawer are portaled to <body> so they escape the nav header's
+  // `backdrop-filter`, which would otherwise become the containing block for
+  // these fixed elements and mis-position them when the page is scrolled.
+  const drawer = (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="md:hidden p-2 -mr-2 text-fg rounded-md hover:bg-surface-2 transition"
-        aria-label="Open menu"
-        aria-expanded={open}
-      >
-        <Menu className="w-5 h-5" />
-      </button>
-
-      {/* Overlay */}
       <div
         className={cn(
-          "fixed inset-0 z-50 bg-bg/80 backdrop-blur-sm transition-opacity md:hidden",
+          "fixed inset-0 z-[60] bg-bg/80 backdrop-blur-sm transition-opacity md:hidden",
           open ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         onClick={() => setOpen(false)}
         aria-hidden
       />
 
-      {/* Drawer — explicit h-dvh because in some preview/iframe contexts the
-          top:0/bottom:0 stretching doesn't resolve correctly. dvh accounts for
-          mobile browser UI chrome correctly when it shows/hides. */}
       <div
         className={cn(
-          "fixed top-0 right-0 z-50 w-[88%] max-w-sm h-dvh max-h-screen bg-bg border-l border-border flex flex-col md:hidden transition-transform",
+          "fixed top-0 right-0 z-[60] w-[88%] max-w-sm h-dvh bg-bg border-l border-border flex flex-col md:hidden transition-transform",
           open ? "translate-x-0" : "translate-x-full",
         )}
         role="dialog"
@@ -107,7 +117,9 @@ export function MobileNav() {
                     href={item.href}
                     className={cn(
                       "flex items-center justify-between px-3 py-3 rounded-md font-display text-2xl tracking-tight transition",
-                      active ? "text-fg bg-surface-2" : "text-muted hover:text-fg hover:bg-surface-2/60",
+                      active
+                        ? "text-fg bg-surface-2"
+                        : "text-muted hover:text-fg hover:bg-surface-2/60",
                     )}
                   >
                     <span>{item.label}</span>
@@ -125,10 +137,7 @@ export function MobileNav() {
         </nav>
 
         <div className="p-5 border-t border-border space-y-2">
-          <Link
-            href="/book"
-            className="btn btn-primary w-full justify-center"
-          >
+          <Link href="/book" className="btn btn-primary w-full justify-center">
             Book a call <ArrowUpRight className="w-4 h-4" />
           </Link>
           <Link
@@ -139,6 +148,22 @@ export function MobileNav() {
           </Link>
         </div>
       </div>
+    </>
+  );
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="md:hidden p-2 -mr-2 text-fg rounded-md hover:bg-surface-2 transition"
+        aria-label="Open menu"
+        aria-expanded={open}
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
+      {mounted ? createPortal(drawer, document.body) : null}
     </>
   );
 }
