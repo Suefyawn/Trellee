@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { AdminPageBody, AdminPageHeader } from "@/components/admin/admin-page";
+import { TableFilter } from "@/components/admin/table-filter";
 import type { InvoiceRow } from "@/lib/types/database";
 import { formatDate } from "@/lib/utils";
 
@@ -45,9 +46,14 @@ export default async function AdminInvoicesPage() {
         title="Invoices"
         description="Create and manage invoices. Open one to view a printable copy (Save as PDF)."
         actions={
-          <Link href="/admin/invoices/new" className="btn btn-primary">
-            <Plus className="w-4 h-4" /> New invoice
-          </Link>
+          <div className="flex items-center gap-2">
+            {invoices.length > 0 ? (
+              <TableFilter targetId="invoices-list" placeholder="Filter invoices…" />
+            ) : null}
+            <Link href="/admin/invoices/new" className="btn btn-primary">
+              <Plus className="w-4 h-4" /> New invoice
+            </Link>
+          </div>
         }
       />
       <AdminPageBody>
@@ -70,10 +76,11 @@ export default async function AdminInvoicesPage() {
                   <th className="text-right p-4 font-normal">Total</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody id="invoices-list">
                 {invoices.map((inv) => (
                   <tr
                     key={inv.id}
+                    data-row
                     className="border-t border-border hover:bg-surface-2/40 transition"
                   >
                     <td className="p-4">
@@ -103,6 +110,11 @@ export default async function AdminInvoicesPage() {
                     </td>
                   </tr>
                 ))}
+                <tr id="invoices-list-empty" style={{ display: "none" }} className="border-t border-border">
+                  <td colSpan={5} className="p-4 text-center text-muted t-small">
+                    No matches.
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
