@@ -9,6 +9,10 @@ import {
   Smartphone,
   Sparkles,
   Target,
+  Ear,
+  PiggyBank,
+  Rocket,
+  HeartHandshake,
   type LucideIcon,
 } from "lucide-react";
 
@@ -23,6 +27,11 @@ const map: Record<string, LucideIcon> = {
   Smartphone,
   Sparkles,
   Target,
+  // value icons
+  Ear,
+  PiggyBank,
+  Rocket,
+  HeartHandshake,
 };
 
 export function ServiceIcon({

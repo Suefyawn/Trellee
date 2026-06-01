@@ -46,19 +46,20 @@ async function query<T>(
   fallback: T,
   label: string,
 ): Promise<T> {
+  // Demo data is ONLY for local dev with no Supabase configured. Once a real
+  // project is wired up, the database is the source of truth — an empty table
+  // means an empty section (no phantom demo content in production).
   if (!isSupabaseConfigured()) return fallback;
   try {
     const sb = createSupabasePublicClient();
     const { data, error } = await fn(sb);
-    if (error) {
-      console.warn(`[cms:${label}]`, error.message);
-      return fallback;
-    }
-    if (data === null || (Array.isArray(data) && data.length === 0)) {
-      return fallback;
-    }
-    return data;
+    if (error) console.warn(`[cms:${label}]`, error.message);
+    // Return whatever the DB gave us — `[]` for empty lists, `null` for a
+    // missing single row. Never substitute demo data here.
+    return data as T;
   } catch (err) {
+    // Only a hard throw (e.g. client init failure) falls back, to keep the
+    // marketing site from hard-crashing on an unexpected error.
     console.warn(`[cms:${label}] threw`, err);
     return fallback;
   }
