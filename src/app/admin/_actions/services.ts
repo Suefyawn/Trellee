@@ -70,6 +70,23 @@ export async function upsertService(input: ServiceFormInput) {
   return { ok: true as const, id };
 }
 
+/** Persist a new ordering: each id's display_order becomes its array index. */
+export async function reorderServices(ids: string[]) {
+  await requireOwner();
+  const sb = createSupabaseAdminClient();
+  for (let i = 0; i < ids.length; i++) {
+    const { error } = await sb
+      .from("services")
+      .update({ display_order: i })
+      .eq("id", ids[i]);
+    if (error) return { ok: false as const, error: error.message };
+  }
+  revalidatePath("/admin/services");
+  revalidatePath("/services");
+  revalidatePath("/");
+  return { ok: true as const };
+}
+
 export async function deleteService(id: string) {
   await requireOwner();
   const sb = createSupabaseAdminClient();

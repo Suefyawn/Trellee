@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Plus, Star } from "lucide-react";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { AdminPageBody, AdminPageHeader } from "@/components/admin/admin-page";
+import { TableFilter } from "@/components/admin/table-filter";
 import { demoReviews } from "@/lib/cms/demo-data";
 import type { ReviewRow } from "@/lib/types/database";
 
@@ -30,16 +31,20 @@ export default async function AdminReviewsPage() {
         title="Reviews"
         description="Text and video testimonials. Featured reviews appear on the homepage."
         actions={
-          <Link href="/admin/reviews/new" className="btn btn-primary">
-            <Plus className="w-4 h-4" /> New review
-          </Link>
+          <div className="flex items-center gap-2">
+            <TableFilter targetId="reviews-list" placeholder="Filter reviews…" />
+            <Link href="/admin/reviews/new" className="btn btn-primary">
+              <Plus className="w-4 h-4" /> New review
+            </Link>
+          </div>
         }
       />
       <AdminPageBody>
-        <div className="grid md:grid-cols-2 gap-4">
+        <div id="reviews-list" className="grid md:grid-cols-2 gap-4">
           {reviews.map((r) => (
             <Link
               key={r.id}
+              data-row
               href={`/admin/reviews/${r.id}`}
               className="surface-card p-6 group hover:border-border-strong transition"
             >
@@ -83,6 +88,13 @@ export default async function AdminReviewsPage() {
               ) : null}
             </Link>
           ))}
+          <div
+            id="reviews-list-empty"
+            style={{ display: "none" }}
+            className="t-small text-muted p-4 md:col-span-2"
+          >
+            No matches.
+          </div>
         </div>
       </AdminPageBody>
     </>
