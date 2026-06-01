@@ -97,7 +97,7 @@ export function MobileNav() {
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-5">
+        <nav className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-5">
           <ul className="space-y-1">
             {navItems.map((item) => {
               const active = pathname.startsWith(item.href);
