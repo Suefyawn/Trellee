@@ -6,7 +6,7 @@ import type { ServiceRow } from "@/lib/types/database";
 import { submitContact } from "@/app/actions/contact";
 import { cn } from "@/lib/utils";
 
-const BUDGETS = ["< $10k", "$10k–25k", "$25k–50k", "$50k–100k", "$100k+", "Not sure"];
+const BUDGETS = ["< $10k", "$10k-25k", "$25k-50k", "$50k-100k", "$100k+", "Not sure"];
 
 export function ContactForm({ services }: { services: ServiceRow[] }) {
   const [form, setForm] = useState({
@@ -156,14 +156,14 @@ export function ContactForm({ services }: { services: ServiceRow[] }) {
 
       {error ? <p className="t-small text-danger">{error}</p> : null}
 
-      <div className="flex items-center justify-between pt-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
         <p className="t-small text-muted max-w-md">
           We&apos;ll reply within a business day. No newsletter signup, no sequences.
         </p>
         <button
           type="submit"
           disabled={pending}
-          className="btn btn-primary btn-magnetic disabled:opacity-60"
+          className="btn btn-primary btn-magnetic disabled:opacity-60 w-full sm:w-auto justify-center"
         >
           <span className="flex items-center gap-2">
             {pending ? "Sending…" : "Send the brief"}

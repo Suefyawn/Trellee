@@ -183,21 +183,21 @@ export function BookingFlow({
               </span>
               <span
                 className={cn(
-                  "transition",
+                  "transition hidden sm:inline",
                   active ? "text-fg" : past ? "text-muted" : "text-muted/60",
                 )}
               >
                 {s.label}
               </span>
               {i < STEPS.length - 1 ? (
-                <span className="w-8 h-px bg-border" />
+                <span className="w-6 sm:w-8 h-px bg-border" />
               ) : null}
             </li>
           );
         })}
       </ol>
 
-      <div className="surface-card p-8 lg:p-10 max-w-3xl mx-auto">
+      <div className="surface-card p-6 sm:p-8 lg:p-10 max-w-3xl mx-auto">
         {step === "service" ? (
           <>
             <h2 className="t-heading-xl font-display">What can we help with?</h2>
