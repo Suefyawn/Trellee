@@ -9,6 +9,7 @@ import {
   Calendar,
   ChevronRight,
   FileText,
+  GitBranch,
   HelpCircle,
   Inbox,
   LayoutDashboard,
@@ -52,6 +53,7 @@ const sections: { label: string; items: NavItem[] }[] = [
   {
     label: "Inbox",
     items: [
+      { href: "/admin/crm", label: "Pipeline", icon: GitBranch },
       { href: "/admin/bookings", label: "Bookings", icon: Calendar },
       { href: "/admin/leads", label: "Contact leads", icon: Inbox },
     ],

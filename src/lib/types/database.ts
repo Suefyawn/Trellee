@@ -222,6 +222,8 @@ export type BookingRow = {
   phone: string | null;
   notes: string | null;
   status: "new" | "contacted" | "scheduled" | "won" | "lost" | "cancelled";
+  pipeline_stage: CrmStage;
+  crm_notes: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -236,8 +238,33 @@ export type ContactSubmissionRow = {
   message: string;
   source: string;
   status: "new" | "contacted" | "closed" | "spam";
+  pipeline_stage: CrmStage;
+  crm_notes: string | null;
   created_at: string;
   updated_at: string;
+};
+
+// ---------------------------------------------------------------- CRM
+export type CrmStage =
+  | "new"
+  | "contacted"
+  | "qualified"
+  | "proposal"
+  | "won"
+  | "lost";
+
+/** A lead normalized from either source table for the pipeline board. */
+export type CrmLead = {
+  source: "contact" | "booking";
+  id: string;
+  name: string;
+  email: string;
+  company: string | null;
+  detail: string | null; // message (contact) or notes/service (booking)
+  meta: string | null; // budget/services (contact) or time slot (booking)
+  pipeline_stage: CrmStage;
+  crm_notes: string | null;
+  created_at: string;
 };
 
 export type InvoiceLineItem = {
