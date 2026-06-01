@@ -121,12 +121,22 @@ export function ClientsEditor({ initial }: { initial: ClientRow[] }) {
               <span className="t-mono text-muted text-[10px] uppercase tracking-wider">
                 Logo URL
               </span>
-              <input
-                className="input mt-1.5"
-                value={it.logo_url}
-                onChange={(e) => update(idx, { logo_url: e.target.value })}
-                placeholder="https://…"
-              />
+              <div className="flex items-center gap-2 mt-1.5">
+                {it.logo_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={it.logo_url}
+                    alt=""
+                    className="w-9 h-9 rounded object-contain bg-surface border border-border shrink-0 p-1"
+                  />
+                ) : null}
+                <input
+                  className="input"
+                  value={it.logo_url}
+                  onChange={(e) => update(idx, { logo_url: e.target.value })}
+                  placeholder="https://…"
+                />
+              </div>
             </label>
             <label className="block md:col-span-3">
               <span className="t-mono text-muted text-[10px] uppercase tracking-wider">
