@@ -292,9 +292,16 @@ export default async function HomePage() {
                     <ArrowUpRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
-                <CRMDashboardMock
-                  brand={featuredProject.client_name ?? featuredProject.title}
-                />
+                {featuredProject.cover_url ? (
+                  <div className="bg-bg/40 p-4 lg:p-6">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={featuredProject.cover_url}
+                      alt={featuredProject.title}
+                      className="w-full h-auto rounded-lg border border-border"
+                    />
+                  </div>
+                ) : null}
                 {featuredProject.metrics.length > 0 ? (
                   <div className="grid grid-cols-2 lg:grid-cols-4 border-t border-border">
                     {featuredProject.metrics.slice(0, 4).map((m, i) => (
@@ -620,135 +627,6 @@ function VideoReviewCard({
             {review.author_company}
           </div>
         ) : null}
-      </div>
-    </div>
-  );
-}
-
-function CRMDashboardMock({ brand = "OPERATOR" }: { brand?: string }) {
-  // Pull the first word of the client name as the mock product wordmark.
-  // Keeps the dashboard visually grounded to the case study being featured
-  // without baking Northside-specific text in.
-  const wordmark = brand
-    .replace(/[^a-zA-Z\s]/g, "")
-    .split(/\s+/)[0]
-    .slice(0, 12)
-    .toUpperCase();
-  return (
-    <div className="bg-bg/40 p-4 lg:p-6">
-      <div className="rounded-lg border border-border overflow-hidden bg-surface">
-        {/* Top bar */}
-        <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
-          <div className="flex items-center gap-2">
-            <span className="logo-mark text-fg" style={{ fontSize: "0.85rem" }}>
-              {wordmark || "OPERATOR"}<span className="dot">.</span>
-            </span>
-            <span className="t-mono text-muted text-[10px]">/dashboard</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-brand-500" />
-            <span className="t-mono text-muted text-[10px]">live</span>
-          </div>
-        </div>
-        <div className="grid grid-cols-12">
-          {/* Sidebar */}
-          <div className="col-span-3 border-r border-border p-3 space-y-1">
-            {[
-              "Dashboard",
-              "Pipeline",
-              "Contacts",
-              "Dispatch",
-              "Invoices",
-              "Reports",
-              "Settings",
-            ].map((nav, i) => (
-              <div
-                key={nav}
-                className={`t-mono text-[10px] px-2 py-1.5 rounded ${
-                  i === 0 ? "bg-brand-500/15 text-brand-500" : "text-muted"
-                }`}
-              >
-                {nav}
-              </div>
-            ))}
-          </div>
-          {/* Main */}
-          <div className="col-span-9 p-4">
-            <div className="grid grid-cols-4 gap-2 mb-4">
-              {[
-                { label: "Open deals", value: "$284k", trend: "↑12%" },
-                { label: "Won 30d", value: "$92k", trend: "↑24%" },
-                { label: "Days to close", value: "11.3", trend: "↓47%" },
-                { label: "Pipeline", value: "47", trend: "→" },
-              ].map((kpi) => (
-                <div
-                  key={kpi.label}
-                  className="surface-card p-2.5"
-                  style={{ borderRadius: "8px" }}
-                >
-                  <div className="t-mono text-[8px] text-muted uppercase tracking-wider">
-                    {kpi.label}
-                  </div>
-                  <div className="font-display text-lg mt-1">{kpi.value}</div>
-                  <div className="t-mono text-[9px] text-brand-500 mt-0.5">
-                    {kpi.trend}
-                  </div>
-                </div>
-              ))}
-            </div>
-            {/* Chart */}
-            <div
-              className="surface-card p-3 mb-3"
-              style={{ borderRadius: "8px" }}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="t-mono text-[9px] text-muted uppercase tracking-wider">
-                  Revenue / month
-                </div>
-                <div className="t-mono text-[9px] text-muted">2025</div>
-              </div>
-              <div className="h-20 flex items-end gap-1">
-                {[35, 45, 38, 55, 62, 50, 68, 72, 65, 80, 85, 95].map((h, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 bg-brand-500/40 rounded-t-sm"
-                    style={{
-                      height: `${h}%`,
-                      opacity: 0.4 + (i / 12) * 0.6,
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-            {/* Recent deals */}
-            <div
-              className="surface-card p-3"
-              style={{ borderRadius: "8px" }}
-            >
-              <div className="t-mono text-[9px] text-muted uppercase tracking-wider mb-2">
-                Recent deals
-              </div>
-              {[
-                { name: "Briarwood Place", value: "$48k", status: "Won" },
-                { name: "Cedar Meadows", value: "$32k", status: "Proposal" },
-                { name: "Oak Ridge HOA", value: "$76k", status: "Discovery" },
-              ].map((deal) => (
-                <div
-                  key={deal.name}
-                  className="flex items-center justify-between t-mono text-[10px] py-1 border-b border-border last:border-0"
-                >
-                  <span>{deal.name}</span>
-                  <span className="text-muted">{deal.value}</span>
-                  <span
-                    className={`badge text-[8px] ${deal.status === "Won" ? "badge-brand" : ""}`}
-                  >
-                    {deal.status}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
