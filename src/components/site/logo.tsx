@@ -2,10 +2,10 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 /**
- * Trellee wordmark — the real PNG from the live trellee.com brand assets.
- * Source: 300×150 black-on-transparent. Site is dark-themed, so we invert
- * the bitmap with a CSS filter to render it white. If a colored variant
- * ever lands in /public/brand, swap the src + drop the invert filter.
+ * Trellee wordmark — the real brand assets from the live trellee.com site.
+ * Two captured variants (2000×1000, transparent):
+ *   /brand/trellee-logo-white.png — white, for the dark theme (default)
+ *   /brand/trellee-logo.png       — black, for light backgrounds (print, etc.)
  */
 export function Logo({
   size = "md",
@@ -15,7 +15,7 @@ export function Logo({
 }: {
   size?: "sm" | "md" | "lg";
   className?: string;
-  /** Invert to white. Default true since the site is dark-themed. */
+  /** White wordmark for dark backgrounds. Default true (the site is dark). */
   invert?: boolean;
   priority?: boolean;
 }) {
@@ -27,7 +27,7 @@ export function Logo({
 
   return (
     <Image
-      src="/brand/trellee-logo.png"
+      src={invert ? "/brand/trellee-logo-white.png" : "/brand/trellee-logo.png"}
       alt="Trellee"
       width={dims.w}
       height={dims.h}
@@ -37,7 +37,6 @@ export function Logo({
         size === "sm" && "h-6",
         size === "md" && "h-7",
         size === "lg" && "h-10",
-        invert && "[filter:invert(1)_brightness(1.05)]",
         className,
       )}
     />
