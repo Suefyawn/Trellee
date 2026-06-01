@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Activity,
+  BarChart3,
   Briefcase,
   Calendar,
   ChevronRight,
@@ -39,7 +40,10 @@ type NavItem = {
 const sections: { label: string; items: NavItem[] }[] = [
   {
     label: "Overview",
-    items: [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard }],
+    items: [
+      { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+    ],
   },
   {
     label: "Marketing site",
