@@ -173,9 +173,10 @@ export default async function HomePage() {
                 <BentoTile
                   key={service.id}
                   href={`/services/${service.slug}`}
-                  className={`${sizeClass} p-6 lg:p-7 flex flex-col justify-between`}
+                  className={`${sizeClass} p-5 lg:p-7 flex flex-col`}
                 >
-                  <div className="flex items-start justify-between">
+                  {/* Top meta row: number + outbound arrow */}
+                  <div className="flex items-start justify-between gap-2">
                     <span
                       className={`badge ${
                         service.tile_size === "xl" || service.featured
@@ -186,34 +187,41 @@ export default async function HomePage() {
                       {String(idx + 1).padStart(2, "0")}
                       {service.tile_size === "xl" ? " · Most picked" : ""}
                     </span>
-                    <ArrowUpRight className="w-5 h-5 text-muted group-hover:text-fg group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition" />
+                    <ArrowUpRight className="w-5 h-5 text-muted group-hover:text-fg group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition shrink-0" />
                   </div>
-                  <div>
-                    {/* sm tiles are only 188px wide — the mono-tag duplicates info
-                        that's already in the heading. Skip it to leave more room
-                        for the icon + title. */}
+
+                  {/* Content — vertically centered so it reads balanced at any
+                      tile height (the bento locks fixed row heights on lg, and
+                      bottom-pinned content left odd gaps in the tall tiles). */}
+                  <div className="flex-1 flex flex-col justify-center py-3 lg:py-4">
+                    {service.icon ? (
+                      <div className="mb-3 text-fg/80">
+                        <ServiceIcon
+                          name={service.icon}
+                          className={
+                            service.tile_size === "xl"
+                              ? "w-6 h-6"
+                              : "w-5 h-5"
+                          }
+                        />
+                      </div>
+                    ) : null}
+                    {/* eyebrow only on roomier tiles (sm tiles are too narrow) */}
                     {service.tile_size !== "sm" ? (
                       <span
-                        className="mono-tag"
+                        className="mono-tag mb-2"
                         style={{ color: "var(--color-muted)" }}
                       >
                         {service.short_title ?? service.title}
                       </span>
                     ) : null}
-                    {service.icon ? (
-                      <div className="mt-3 mb-1 text-fg/80">
-                        <ServiceIcon name={service.icon} className="w-5 h-5" />
-                      </div>
-                    ) : null}
                     <h3
-                      className={`font-display mt-2 max-w-md ${
+                      className={`font-display max-w-md ${
                         service.tile_size === "xl"
                           ? "t-heading-xl"
                           : "t-heading-l"
                       }`}
                     >
-                      {/* sm tiles get the short_title (fits in 188px width).
-                          xl/lg/md show the hero_snippet (longer marketing line). */}
                       {service.tile_size === "sm"
                         ? (service.short_title ?? service.title)
                         : (service.hero_snippet ?? service.title)}
