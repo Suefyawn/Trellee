@@ -332,26 +332,31 @@ export default async function HomePage() {
                   <Link
                     key={p.id}
                     href={`/portfolio/${p.slug}`}
-                    className="bento-tile p-6 group"
+                    className="bento-tile p-0 overflow-hidden group flex flex-col flex-1"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="mono-tag">{p.hero_eyebrow ?? "CASE STUDY"}</span>
-                      <ArrowUpRight className="w-4 h-4 text-muted group-hover:text-fg transition" />
+                    <div className="relative aspect-[16/9] overflow-hidden border-b border-border bg-surface-2">
+                      {p.cover_url ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={p.cover_url}
+                          alt={`${p.title} website`}
+                          className="absolute inset-0 w-full h-full object-cover object-top transition duration-500 group-hover:scale-[1.03]"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-surface-2 to-bg flex items-center justify-center">
+                          <span className="font-display text-xl text-muted/40 px-4 text-center">
+                            {p.title}
+                          </span>
+                        </div>
+                      )}
+                      <ArrowUpRight className="absolute top-3 right-3 w-6 h-6 text-fg bg-bg/50 backdrop-blur rounded-md p-1 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition" />
                     </div>
-                    <h4 className="t-heading-l font-display mt-4">{p.title}</h4>
-                    <p className="t-small text-muted mt-2">{p.summary}</p>
-                    {p.metrics.length > 0 ? (
-                      <div className="flex flex-wrap gap-3 mt-5 pt-5 border-t border-border">
-                        {p.metrics.slice(0, 3).map((m, i) => (
-                          <div key={i}>
-                            <div className="font-display text-lg">{m.value}</div>
-                            <div className="t-mono text-muted text-[10px] uppercase tracking-wider">
-                              {m.label}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : null}
+                    <div className="p-6 flex-1 flex flex-col">
+                      <span className="mono-tag">{p.hero_eyebrow ?? "CASE STUDY"}</span>
+                      <h4 className="t-heading-l font-display mt-3">{p.title}</h4>
+                      <p className="t-small text-muted mt-2 line-clamp-2">{p.summary}</p>
+                    </div>
                   </Link>
                 ))}
               </Reveal>
