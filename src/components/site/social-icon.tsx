@@ -1,4 +1,4 @@
-import { Github, Instagram, Linkedin, Youtube, Globe } from "lucide-react";
+import { Facebook, Github, Instagram, Linkedin, Youtube, Globe } from "lucide-react";
 
 export function SocialIcon({
   platform,
@@ -23,6 +23,7 @@ export function SocialIcon({
   }
   if (p === "linkedin") return <Linkedin className={className} />;
   if (p === "github") return <Github className={className} />;
+  if (p === "facebook") return <Facebook className={className} />;
   if (p === "instagram") return <Instagram className={className} />;
   if (p === "youtube") return <Youtube className={className} />;
   return <Globe className={className} />;
