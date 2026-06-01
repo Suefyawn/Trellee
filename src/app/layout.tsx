@@ -5,12 +5,12 @@ import { PostHogProvider } from "@/components/analytics/posthog-provider";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 const siteName = "Trellee";
 const description =
-  "Trellee is a full-stack digital agency. We design brands, ship code, run ads, and build the systems your business runs on — all from one team.";
+  "Trellee is a full-stack digital agency. We design brands, ship code, run ads, and build the systems your business runs on, all from one team.";
 
 export const metadata: Metadata = {
   title: {
-    default: `${siteName} — Full-stack digital agency`,
-    template: `%s — ${siteName}`,
+    default: `${siteName} · Full-stack digital agency`,
+    template: `%s · ${siteName}`,
   },
   description,
   metadataBase: new URL(siteUrl),
@@ -32,12 +32,12 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: siteUrl,
     siteName,
-    title: `${siteName} — Full-stack digital agency`,
+    title: `${siteName} · Full-stack digital agency`,
     description,
   },
   twitter: {
     card: "summary_large_image",
-    title: `${siteName} — Full-stack digital agency`,
+    title: `${siteName} · Full-stack digital agency`,
     description,
     creator: "@trellee",
   },

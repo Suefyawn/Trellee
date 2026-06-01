@@ -47,7 +47,7 @@ export default async function BlogPage({
               <span className="text-muted">what we&apos;re thinking.</span>
             </h1>
             <p className="t-body-l text-muted mt-6 max-w-2xl">
-              Notes on the work — engineering, design, growth, and the messy parts of
+              Notes on the work: engineering, design, growth, and the messy parts of
               running a small studio. No clickbait, no list-of-tools posts.
             </p>
           </Reveal>
@@ -90,7 +90,7 @@ export default async function BlogPage({
         <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
           {posts.length === 0 ? (
             <p className="t-body text-muted">
-              No posts in this category yet — check back soon.
+              No posts in this category yet. Check back soon.
             </p>
           ) : (
             <>

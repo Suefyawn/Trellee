@@ -19,7 +19,7 @@ export async function SiteFooter() {
       <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-16">
         <div className="grid grid-cols-2 md:grid-cols-12 gap-10">
           <div className="col-span-2 md:col-span-5">
-            <Link href="/" aria-label="Trellee — home" className="inline-block">
+            <Link href="/" aria-label="Trellee home" className="inline-block">
               <Logo size="md" />
             </Link>
             <p className="t-body text-muted mt-5 max-w-sm">{settings.tagline}</p>

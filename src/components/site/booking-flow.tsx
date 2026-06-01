@@ -117,7 +117,7 @@ export function BookingFlow({
         <h1 className="t-display-l mt-6 font-display">You&apos;re on the calendar.</h1>
         <p className="t-body-l text-muted mt-4 max-w-lg mx-auto">
           We&apos;ll send a confirmation to <span className="text-fg">{details.email}</span>{" "}
-          within the next 10 minutes. If you don&apos;t see it, check spam — and reach out
+          within the next 10 minutes. If you don&apos;t see it, check spam, and reach out
           on Slack or WhatsApp if all else fails.
         </p>
 
@@ -202,7 +202,7 @@ export function BookingFlow({
           <>
             <h2 className="t-heading-xl font-display">What can we help with?</h2>
             <p className="t-body text-muted mt-2">
-              Pick the closest match — we&apos;ll figure out the rest on the call.
+              Pick the closest match. We&apos;ll figure out the rest on the call.
             </p>
             <div className="grid sm:grid-cols-2 gap-3 mt-8">
               {services.map((svc) => {
@@ -336,7 +336,7 @@ export function BookingFlow({
           <>
             <h2 className="t-heading-xl font-display">Who&apos;s joining?</h2>
             <p className="t-body text-muted mt-2">
-              Just the basics — we won&apos;t harass you with sequences.
+              Just the basics. We won&apos;t harass you with sequences.
             </p>
             <div className="grid sm:grid-cols-2 gap-4 mt-8">
               <label className="block">
