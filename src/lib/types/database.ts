@@ -317,6 +317,21 @@ export type PmTaskRow = {
   updated_at: string;
 };
 
+// ---------------------------------------------------------------- Website monitor
+export type MonitoredSiteRow = {
+  id: string;
+  label: string;
+  url: string;
+  active: boolean;
+  is_up: boolean | null;
+  last_status_code: number | null;
+  last_error: string | null;
+  last_checked_at: string | null;
+  last_changed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type SiteSettingsRow = {
   id: 1;
   company_name: string;
@@ -378,6 +393,7 @@ export type Database = {
       invoices: SelectInsertUpdate<InvoiceRow>;
       pm_projects: SelectInsertUpdate<PmProjectRow>;
       pm_tasks: SelectInsertUpdate<PmTaskRow>;
+      monitored_sites: SelectInsertUpdate<MonitoredSiteRow>;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

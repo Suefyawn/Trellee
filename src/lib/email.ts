@@ -310,6 +310,49 @@ function renderContactSubmitterText(p: ContactEmailPayload): string {
   ].join("\n");
 }
 
+// ---------- Website monitor alert ----------
+
+export type MonitorAlertPayload = {
+  label: string;
+  url: string;
+  isUp: boolean;
+  statusCode?: number | null;
+  error?: string | null;
+};
+
+/** Sends an up/down alert to the admin. No-op (logged) if email isn't set up. */
+export async function sendMonitorAlert(p: MonitorAlertPayload) {
+  const cfg = getEmailConfig();
+  if (!cfg) {
+    console.info("[email] monitor alert skipped (not configured):", p);
+    return;
+  }
+  const dot = p.isUp ? "🟢" : "🔴";
+  const state = p.isUp ? "back UP" : "DOWN";
+  await safeSend("monitor alert", () =>
+    cfg.resend.emails.send({
+      from: cfg.from,
+      to: cfg.adminTo,
+      subject: `${dot} ${p.label} is ${state}`,
+      html: layout(
+        `${p.label} is ${state}`,
+        `
+        <p><strong>${esc(p.label)}</strong> is ${p.isUp ? "back online" : "down"}.</p>
+        ${row("URL", `<a href="${esc(p.url)}">${esc(p.url)}</a>`)}
+        ${p.statusCode != null ? row("HTTP status", String(p.statusCode)) : ""}
+        ${p.error ? row("Error", esc(p.error)) : ""}
+        <p style="margin-top:24px;">
+          <a href="${SITE_URL}/admin/monitor" class="btn">Open the monitor</a>
+        </p>
+      `,
+      ),
+      text: `${p.label} is ${state}\n\nURL: ${p.url}\n${
+        p.statusCode != null ? `HTTP status: ${p.statusCode}\n` : ""
+      }${p.error ? `Error: ${p.error}\n` : ""}\nMonitor: ${SITE_URL}/admin/monitor`,
+    }),
+  );
+}
+
 // ---------- helpers ----------
 
 /**
