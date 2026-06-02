@@ -59,7 +59,7 @@ export default async function HomePage() {
               Booking {settings.booking_quarter} · {settings.booking_slots_open} slots open
             </span>
             <span className="t-mono text-muted hidden sm:inline">
-              /{settings.city?.split(",")[0]?.toLowerCase()} · est. 2016
+              est. 2016
             </span>
           </Reveal>
 
