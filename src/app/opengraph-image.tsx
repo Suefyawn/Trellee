@@ -1,11 +1,26 @@
 import { ImageResponse } from "next/og";
+import { getSiteSettings } from "@/lib/cms";
 
-export const runtime = "edge";
 export const alt = "Trellee · Full-stack digital agency";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+export const dynamic = "force-dynamic";
 
 export default async function OpengraphImage() {
+  // Keep the share card in sync with the hero's booking line. Fall back to
+  // sensible defaults so the image always renders even if the fetch fails.
+  let quarter = "Q3 2026";
+  let slots = 4;
+  try {
+    const s = await getSiteSettings();
+    if (s?.booking_quarter) quarter = s.booking_quarter;
+    if (typeof s?.booking_slots_open === "number" && s.booking_slots_open > 0) {
+      slots = s.booking_slots_open;
+    }
+  } catch {
+    /* defaults */
+  }
+
   return new ImageResponse(
     (
       <div
@@ -16,8 +31,9 @@ export default async function OpengraphImage() {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "80px",
-          background:
-            "radial-gradient(circle at 15% 15%, rgba(80,210,160,0.18), transparent 55%), radial-gradient(circle at 85% 85%, rgba(60,170,140,0.10), transparent 60%), #07090c",
+          backgroundColor: "#07090c",
+          backgroundImage:
+            "radial-gradient(circle at 15% 15%, rgba(80,210,160,0.18), transparent 55%), radial-gradient(circle at 85% 85%, rgba(60,170,140,0.10), transparent 60%)",
           color: "#f5f6f7",
           fontFamily: "system-ui, -apple-system, sans-serif",
         }}
@@ -98,7 +114,7 @@ export default async function OpengraphImage() {
                 display: "flex",
               }}
             />
-            Booking Q3 · 4 slots open
+            Booking {quarter} · {slots} slots open
           </span>
         </div>
       </div>
