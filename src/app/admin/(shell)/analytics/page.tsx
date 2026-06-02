@@ -7,7 +7,11 @@ import {
   TrendingDown,
 } from "lucide-react";
 import { AdminPageBody, AdminPageHeader } from "@/components/admin/admin-page";
-import { getAnalyticsSnapshot, analyticsConfigured } from "@/lib/posthog-server";
+import {
+  getAnalyticsSnapshot,
+  analyticsConfigured,
+  analyticsEnvStatus,
+} from "@/lib/posthog-server";
 import { timeAgo } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -113,9 +117,37 @@ export default async function AdminAnalyticsPage() {
                 In Vercel, set{" "}
                 <span className="t-mono text-fg">POSTHOG_PERSONAL_API_KEY</span> and{" "}
                 <span className="t-mono text-fg">POSTHOG_PROJECT_ID</span> (PostHog →
-                Settings → Project ID), then redeploy.
+                Settings → Project ID) for the{" "}
+                <span className="text-fg">Production</span> environment, then redeploy.
               </li>
             </ol>
+            {(() => {
+              const s = analyticsEnvStatus();
+              return (
+                <div className="mt-5 pt-4 border-t border-border/60">
+                  <div className="t-mono text-muted text-[11px] uppercase tracking-wider mb-2">
+                    What this server currently sees
+                  </div>
+                  <ul className="space-y-1 t-small">
+                    <li className={s.key ? "text-brand-500" : "text-danger"}>
+                      {s.key ? "✓" : "✗"} POSTHOG_PERSONAL_API_KEY
+                      {s.key ? ` (starts "${s.keyPrefix}…")` : " — not detected"}
+                    </li>
+                    <li className={s.project ? "text-brand-500" : "text-danger"}>
+                      {s.project ? "✓" : "✗"} POSTHOG_PROJECT_ID
+                      {s.project ? ` = ${s.projectId}` : " — not detected"}
+                    </li>
+                    <li className="text-muted">host: {s.host}</li>
+                  </ul>
+                  <p className="t-small text-muted mt-3 max-w-2xl">
+                    A ✗ means that variable isn&apos;t reaching this deployment,
+                    usually because it was saved for Preview/Development only, or
+                    the name has a typo. Fix it in Vercel → Settings → Environment
+                    Variables (scope: Production), then redeploy.
+                  </p>
+                </div>
+              );
+            })()}
           </div>
         ) : data === null ? (
           <div className="rounded-lg border border-danger/40 bg-danger/5 p-6 mb-6">
