@@ -17,7 +17,7 @@ import {
   RANGES,
   normalizeRange,
 } from "@/lib/posthog-server";
-import { getGscSnapshot, gscEnvStatus } from "@/lib/gsc-server";
+import { loadGsc, gscEnvStatus } from "@/lib/gsc-server";
 import { timeAgo } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -276,10 +276,12 @@ export default async function AdminAnalyticsPage({
 }) {
   const ph = posthogAppHost();
   const range = normalizeRange((await searchParams).range);
-  const [data, gsc] = await Promise.all([
+  const [data, gscResult] = await Promise.all([
     getAnalyticsSnapshot(range),
-    getGscSnapshot(28),
+    loadGsc(28),
   ]);
+  const gsc = gscResult.snapshot;
+  const gscError = gscResult.error;
   const periodLabel = RANGE_LABEL[range] ?? `${range} days`;
 
   const links = [
@@ -681,8 +683,15 @@ export default async function AdminAnalyticsPage({
               const st = gscEnvStatus();
               return (
                 <div className="rounded-lg border border-border bg-surface-2/30 p-6">
-                  <h3 className="t-heading-l font-display">Connect Search Console</h3>
-                  <p className="t-body text-muted mt-2 max-w-2xl">
+                  <h3 className="t-heading-l font-display">
+                    {gscError ? "Search Console: needs attention" : "Connect Search Console"}
+                  </h3>
+                  {gscError ? (
+                    <div className="mt-3 rounded-md border border-danger/40 bg-danger/5 p-3">
+                      <p className="t-small text-fg">{gscError}</p>
+                    </div>
+                  ) : null}
+                  <p className="t-body text-muted mt-3 max-w-2xl">
                     See the real Google searches that bring people in — queries,
                     impressions, clicks, and average position. Best set up once the
                     site is live on its domain and verified in Search Console.

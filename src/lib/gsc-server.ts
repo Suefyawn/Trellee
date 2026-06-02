@@ -11,9 +11,9 @@
  *   GSC_SITE_URL — the verified property, e.g. "https://trellee.com/" or the
  *     domain property form "sc-domain:trellee.com".
  *
- * Returns null on any failure so the dashboard degrades gracefully (shows a
- * "Connect Search Console" card until configured — which happens once the site
- * is live on its domain and verified).
+ * loadGsc() returns { snapshot, error }: a snapshot when it works, or a
+ * human-readable error when configured-but-failing, so the dashboard can
+ * explain *why* instead of showing a generic "connect" card.
  */
 import crypto from "node:crypto";
 
@@ -136,11 +136,20 @@ export type GscSnapshot = {
   topPages: { page: string; clicks: number; impressions: number }[];
 };
 
-/** Fetch a Search Console snapshot for the last `days` days. */
-export async function getGscSnapshot(days = 28): Promise<GscSnapshot | null> {
-  if (!gscConfigured()) return null;
+export type GscResult = { snapshot: GscSnapshot | null; error: string | null };
+
+/** Load a Search Console snapshot for the last `days` days (with a reason on failure). */
+export async function loadGsc(days = 28): Promise<GscResult> {
+  if (!gscConfigured()) return { snapshot: null, error: null };
+
   const token = await getAccessToken();
-  if (!token) return null;
+  if (!token) {
+    return {
+      snapshot: null,
+      error:
+        "Could not authenticate the service account. Check that GSC_SERVICE_ACCOUNT_JSON is the complete, unmodified key file (including the full private_key), and that the Search Console API is enabled in the Google Cloud project.",
+    };
+  }
 
   const site = process.env.GSC_SITE_URL!.trim();
   // GSC data lags ~2 days; offset the window so the latest rows aren't empty.
@@ -151,7 +160,10 @@ export async function getGscSnapshot(days = 28): Promise<GscSnapshot | null> {
     site,
   )}/searchAnalytics/query`;
 
-  async function q(dimensions: string[], rowLimit: number): Promise<GscApiRow[] | null> {
+  async function q(
+    dimensions: string[],
+    rowLimit: number,
+  ): Promise<{ rows: GscApiRow[] | null; status?: number; message?: string }> {
     try {
       const res = await fetch(url, {
         method: "POST",
@@ -168,14 +180,23 @@ export async function getGscSnapshot(days = 28): Promise<GscSnapshot | null> {
         cache: "no-store",
       });
       if (!res.ok) {
-        console.error("[gsc] query failed", res.status, await res.text());
-        return null;
+        const body = await res.text();
+        let message = body.slice(0, 300);
+        try {
+          message =
+            (JSON.parse(body) as { error?: { message?: string } }).error?.message ??
+            message;
+        } catch {
+          /* non-JSON error body — keep the raw slice */
+        }
+        console.error("[gsc] query failed", res.status, body);
+        return { rows: null, status: res.status, message };
       }
       const j = (await res.json()) as { rows?: GscApiRow[] };
-      return j.rows ?? [];
+      return { rows: j.rows ?? [] };
     } catch (err) {
       console.error("[gsc] query threw", err);
-      return null;
+      return { rows: null, message: String(err) };
     }
   }
 
@@ -185,28 +206,45 @@ export async function getGscSnapshot(days = 28): Promise<GscSnapshot | null> {
     q(["page"], 10),
   ]);
 
-  if (overall === null) return null; // auth/permission failure — treat as unavailable
+  if (overall.rows === null) {
+    const email = gscEnvStatus().serviceEmail || "the service account";
+    const hint =
+      overall.status === 403
+        ? ` Most likely "${email}" hasn't been added as a user on the ${site} property in Search Console (Settings → Users and permissions), or that property isn't verified yet.`
+        : overall.status === 404
+          ? ` No Search Console property matches GSC_SITE_URL = "${site}". Check the exact form: "sc-domain:trellee.com" for a Domain property, or "https://trellee.com/" for a URL-prefix property.`
+          : "";
+    return {
+      snapshot: null,
+      error: `Search Console API error${
+        overall.status ? ` (${overall.status})` : ""
+      }: ${overall.message ?? "unknown"}.${hint}`,
+    };
+  }
 
-  const tot = overall[0] ?? { clicks: 0, impressions: 0, ctr: 0, position: 0 };
+  const tot = overall.rows[0] ?? { clicks: 0, impressions: 0, ctr: 0, position: 0 };
   return {
-    rangeDays: days,
-    totals: {
-      clicks: tot.clicks ?? 0,
-      impressions: tot.impressions ?? 0,
-      ctr: tot.ctr ?? 0,
-      position: tot.position ?? 0,
+    snapshot: {
+      rangeDays: days,
+      totals: {
+        clicks: tot.clicks ?? 0,
+        impressions: tot.impressions ?? 0,
+        ctr: tot.ctr ?? 0,
+        position: tot.position ?? 0,
+      },
+      topQueries: (queries.rows ?? []).map((r) => ({
+        query: r.keys?.[0] ?? "",
+        clicks: r.clicks,
+        impressions: r.impressions,
+        ctr: r.ctr,
+        position: r.position,
+      })),
+      topPages: (pages.rows ?? []).map((r) => ({
+        page: r.keys?.[0] ?? "",
+        clicks: r.clicks,
+        impressions: r.impressions,
+      })),
     },
-    topQueries: (queries ?? []).map((r) => ({
-      query: r.keys?.[0] ?? "",
-      clicks: r.clicks,
-      impressions: r.impressions,
-      ctr: r.ctr,
-      position: r.position,
-    })),
-    topPages: (pages ?? []).map((r) => ({
-      page: r.keys?.[0] ?? "",
-      clicks: r.clicks,
-      impressions: r.impressions,
-    })),
+    error: null,
   };
 }
