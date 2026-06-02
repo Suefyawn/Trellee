@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { recordAudit } from "@/lib/audit";
 
 function isSupabaseConfigured() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -26,21 +27,38 @@ export async function loginAction(formData: FormData): Promise<LoginResult> {
 
   const ownerEmail = process.env.ADMIN_OWNER_EMAIL?.toLowerCase();
   if (ownerEmail && email !== ownerEmail) {
+    await recordAudit({
+      action: "LOGIN_FAILED",
+      entity: "auth",
+      label: `${email} (not the owner account)`,
+      actor: "anon",
+    });
     return { ok: false, error: "That account isn't the owner." };
   }
 
   const sb = await createSupabaseServerClient();
   const { error } = await sb.auth.signInWithPassword({ email, password });
   if (error) {
+    await recordAudit({
+      action: "LOGIN_FAILED",
+      entity: "auth",
+      label: `${email} (${error.message})`,
+      actor: "anon",
+    });
     return { ok: false, error: error.message };
   }
+  await recordAudit({ action: "LOGIN", entity: "auth", label: email });
   return { ok: true };
 }
 
 export async function logoutAction() {
   if (isSupabaseConfigured()) {
     const sb = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await sb.auth.getUser();
     await sb.auth.signOut();
+    await recordAudit({ action: "LOGOUT", entity: "auth", label: user?.email ?? null });
   }
   redirect("/admin/login");
 }
