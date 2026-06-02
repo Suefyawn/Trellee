@@ -174,7 +174,9 @@ export default async function HomePage() {
                 <BentoTile
                   key={service.id}
                   href={`/services/${service.slug}`}
-                  className={`${sizeClass} p-5 lg:p-7 flex flex-col`}
+                  className={`${sizeClass} ${
+                    service.tile_size === "xl" ? "p-5 lg:p-7" : "p-5"
+                  } flex flex-col overflow-hidden`}
                 >
                   {/* Top meta row: number + outbound arrow */}
                   <div className="flex items-start justify-between gap-2">
@@ -195,7 +197,9 @@ export default async function HomePage() {
                       tile height (the bento locks fixed row heights on lg, and
                       bottom-pinned content left odd gaps in the tall tiles). */}
                   <div className="flex-1 flex flex-col justify-center py-3 lg:py-4">
-                    {service.icon ? (
+                    {/* md tiles are a single 140px row — the icon would push the
+                        heading out of the tile, so it's omitted there. */}
+                    {service.icon && service.tile_size !== "md" ? (
                       <div className="mb-3 text-fg/80">
                         <ServiceIcon
                           name={service.icon}
@@ -220,7 +224,7 @@ export default async function HomePage() {
                       className={`font-display max-w-md ${
                         service.tile_size === "xl"
                           ? "t-heading-xl"
-                          : "t-heading-l"
+                          : "t-heading-l line-clamp-2"
                       }`}
                     >
                       {service.tile_size === "sm"
@@ -232,7 +236,9 @@ export default async function HomePage() {
                         {service.summary}
                       </p>
                     ) : null}
-                    {(service.tile_size === "lg" || service.tile_size === "md") &&
+                    {/* Tags only on the taller lg tiles (2 rows). md tiles are a
+                        single row and can't fit a tag row under the heading. */}
+                    {service.tile_size === "lg" &&
                     service.tags.length > 0 ? (
                       <div className="mt-4 flex flex-wrap gap-1.5">
                         {service.tags.slice(0, 4).map((tag) => (
