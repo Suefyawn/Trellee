@@ -13,6 +13,7 @@ import {
   GitBranch,
   Globe,
   HelpCircle,
+  History,
   Inbox,
   LayoutDashboard,
   ListChecks,
@@ -43,6 +44,7 @@ const sections: { label: string; items: NavItem[] }[] = [
     items: [
       { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
       { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+      { href: "/admin/audit", label: "Audit log", icon: History },
     ],
   },
   {

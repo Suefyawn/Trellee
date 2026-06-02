@@ -388,6 +388,18 @@ export type IntegrationTokenRow = {
   updated_at: string;
 };
 
+export type AuditLogRow = {
+  id: number;
+  at: string;
+  actor: string | null;
+  action: string;
+  entity: string;
+  entity_id: string | null;
+  label: string | null;
+  changed_keys: string[] | null;
+  data: Record<string, unknown> | null;
+};
+
 type SelectInsertUpdate<R> = {
   Row: R;
   Insert: { [K in keyof R]?: R[K] };
@@ -420,6 +432,7 @@ export type Database = {
       monitored_sites: SelectInsertUpdate<MonitoredSiteRow>;
       newsletter_subscribers: SelectInsertUpdate<NewsletterSubscriberRow>;
       integration_tokens: SelectInsertUpdate<IntegrationTokenRow>;
+      audit_log: SelectInsertUpdate<AuditLogRow>;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
