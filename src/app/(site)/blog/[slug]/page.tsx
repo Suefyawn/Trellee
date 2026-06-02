@@ -14,6 +14,10 @@ import { ShareRow } from "@/components/site/share-row";
 import { JsonLd, breadcrumb } from "@/components/seo/json-ld";
 import { formatDate } from "@/lib/utils";
 
+// Rebuild from the CMS at most every 10 minutes (ISR), so content edits in
+// the admin go live without a manual redeploy.
+export const revalidate = 600;
+
 export async function generateStaticParams() {
   const posts = await getBlogPosts();
   return posts.map((p) => ({ slug: p.slug }));

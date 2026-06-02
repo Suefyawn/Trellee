@@ -11,6 +11,10 @@ import { PostCover } from "@/components/site/post-cover";
 import { NewsletterForm } from "@/components/site/newsletter-form";
 import { formatDate } from "@/lib/utils";
 
+// Rebuild from the CMS at most every 10 minutes (ISR), so content edits in
+// the admin go live without a manual redeploy.
+export const revalidate = 600;
+
 export const metadata = {
   title: "Field notes",
   description: "What we shipped, what broke, what we're reading.",

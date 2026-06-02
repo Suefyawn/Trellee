@@ -11,6 +11,10 @@ import { Reveal } from "@/components/site/reveal";
 import { VideoReview } from "@/components/site/video-review";
 import { JsonLd, breadcrumb } from "@/components/seo/json-ld";
 
+// Rebuild from the CMS at most every 10 minutes (ISR), so content edits in
+// the admin go live without a manual redeploy.
+export const revalidate = 600;
+
 export async function generateStaticParams() {
   const projects = await getProjects();
   return projects.map((p) => ({ slug: p.slug }));

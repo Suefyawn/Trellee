@@ -14,6 +14,10 @@ import { ServiceIcon } from "@/components/site/service-icon";
 import { FAQAccordion } from "@/components/site/faq-accordion";
 import { JsonLd, breadcrumb } from "@/components/seo/json-ld";
 
+// Rebuild from the CMS at most every 10 minutes (ISR), so content edits in
+// the admin go live without a manual redeploy.
+export const revalidate = 600;
+
 export async function generateStaticParams() {
   const services = await getServices();
   return services.map((s) => ({ slug: s.slug }));
