@@ -9,6 +9,7 @@ import type { ProjectRow, ServiceRow } from "@/lib/types/database";
 import { slugify } from "@/lib/utils";
 import { Field, Section } from "./ui";
 import { JsonListEditor } from "./json-list-editor";
+import { ImageUpload } from "./image-upload";
 
 export function ProjectForm({
   initial,
@@ -244,20 +245,22 @@ export function ProjectForm({
       </Section>
 
       <Section title="Media + assets">
-        <Field label="Cover image URL">
-          <input
-            className="input"
+        <div className="grid md:grid-cols-2 gap-5">
+          <ImageUpload
+            label="Cover image"
+            aspect="16 / 10"
+            hint="Shown as the hero on the case study"
             value={form.cover_url}
-            onChange={(e) => set("cover_url", e.target.value)}
+            onChange={(url) => set("cover_url", url)}
           />
-        </Field>
-        <Field label="Thumbnail URL">
-          <input
-            className="input"
+          <ImageUpload
+            label="Thumbnail"
+            aspect="16 / 10"
+            hint="Used in listings / cards"
             value={form.thumbnail_url}
-            onChange={(e) => set("thumbnail_url", e.target.value)}
+            onChange={(url) => set("thumbnail_url", url)}
           />
-        </Field>
+        </div>
       </Section>
 
       <Section title="Publish">

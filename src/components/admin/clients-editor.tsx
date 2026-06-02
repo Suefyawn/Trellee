@@ -8,6 +8,7 @@ import {
   upsertClientAction,
 } from "@/app/admin/_actions/wrappers";
 import type { ClientRow } from "@/lib/types/database";
+import { ImageUpload } from "./image-upload";
 
 type Draft = {
   id?: string;
@@ -117,27 +118,14 @@ export function ClientsEditor({ initial }: { initial: ClientRow[] }) {
                 onChange={(e) => update(idx, { name: e.target.value })}
               />
             </label>
-            <label className="block md:col-span-3">
-              <span className="t-mono text-muted text-[10px] uppercase tracking-wider">
-                Logo URL
-              </span>
-              <div className="flex items-center gap-2 mt-1.5">
-                {it.logo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={it.logo_url}
-                    alt=""
-                    className="w-9 h-9 rounded object-contain bg-surface border border-border shrink-0 p-1"
-                  />
-                ) : null}
-                <input
-                  className="input"
-                  value={it.logo_url}
-                  onChange={(e) => update(idx, { logo_url: e.target.value })}
-                  placeholder="https://…"
-                />
-              </div>
-            </label>
+            <div className="block md:col-span-3">
+              <ImageUpload
+                label="Logo"
+                aspect="3 / 2"
+                value={it.logo_url}
+                onChange={(url) => update(idx, { logo_url: url })}
+              />
+            </div>
             <label className="block md:col-span-3">
               <span className="t-mono text-muted text-[10px] uppercase tracking-wider">
                 Website

@@ -8,6 +8,7 @@ import {
   upsertTeamMemberAction,
 } from "@/app/admin/_actions/wrappers";
 import type { TeamMemberRow } from "@/lib/types/database";
+import { ImageUpload } from "./image-upload";
 
 type Draft = {
   id?: string;
@@ -119,26 +120,14 @@ export function TeamEditor({ initial }: { initial: TeamMemberRow[] }) {
                 onChange={(e) => update(idx, { role: e.target.value })}
               />
             </label>
-            <label className="block md:col-span-4">
-              <span className="t-mono text-muted text-[10px] uppercase tracking-wider">
-                Avatar URL
-              </span>
-              <div className="flex items-center gap-2 mt-1.5">
-                {it.avatar_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={it.avatar_url}
-                    alt=""
-                    className="w-9 h-9 rounded-full object-cover border border-border shrink-0"
-                  />
-                ) : null}
-                <input
-                  className="input"
-                  value={it.avatar_url}
-                  onChange={(e) => update(idx, { avatar_url: e.target.value })}
-                />
-              </div>
-            </label>
+            <div className="block md:col-span-4">
+              <ImageUpload
+                label="Avatar"
+                rounded
+                value={it.avatar_url}
+                onChange={(url) => update(idx, { avatar_url: url })}
+              />
+            </div>
             <label className="block md:col-span-1">
               <span className="t-mono text-muted text-[10px] uppercase tracking-wider">
                 Order
