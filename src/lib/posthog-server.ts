@@ -116,6 +116,8 @@ export async function getAnalyticsSnapshot(
   // chart stays readable.
   const bucket = d > 45 ? "toStartOfWeek(timestamp)" : "toDate(timestamp)";
   const CONV = "('booking_submitted', 'contact_submitted', 'newsletter_subscribed')";
+  // Exclude the owner's own admin browsing so the figures reflect real visitors.
+  const NO_ADMIN = "properties.$pathname NOT ILIKE '/admin%'";
 
   const [
     kpis,
@@ -137,12 +139,12 @@ export async function getAnalyticsSnapshot(
     // Current-period pageviews / visitors / sessions in one pass.
     hogql(
       `SELECT count(), count(distinct person_id), count(distinct properties.$session_id)
-       FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${d} DAY`,
+       FROM events WHERE event = '$pageview' AND ${NO_ADMIN} AND timestamp >= now() - INTERVAL ${d} DAY`,
     ),
     // Previous equal-length period, for deltas.
     hogql(
       `SELECT count(), count(distinct person_id), count(distinct properties.$session_id)
-       FROM events WHERE event = '$pageview'
+       FROM events WHERE event = '$pageview' AND ${NO_ADMIN}
          AND timestamp >= now() - INTERVAL ${prev} DAY AND timestamp < now() - INTERVAL ${d} DAY`,
     ),
     hogql(
@@ -154,19 +156,19 @@ export async function getAnalyticsSnapshot(
     ),
     hogql(
       `SELECT ${bucket} AS d, count(), count(distinct person_id)
-       FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${d} DAY
+       FROM events WHERE event = '$pageview' AND ${NO_ADMIN} AND timestamp >= now() - INTERVAL ${d} DAY
        GROUP BY d ORDER BY d`,
     ),
     hogql(
       `SELECT properties.$pathname AS path, count() AS c
-       FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${d} DAY
+       FROM events WHERE event = '$pageview' AND ${NO_ADMIN} AND timestamp >= now() - INTERVAL ${d} DAY
        GROUP BY path ORDER BY c DESC LIMIT 10`,
     ),
     // Entry page = first pageview path of each session.
     hogql(
       `SELECT path, count() AS c FROM (
          SELECT properties.$session_id AS sid, argMin(properties.$pathname, timestamp) AS path
-         FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${d} DAY
+         FROM events WHERE event = '$pageview' AND ${NO_ADMIN} AND timestamp >= now() - INTERVAL ${d} DAY
            AND properties.$session_id IS NOT NULL
          GROUP BY sid
        ) GROUP BY path ORDER BY c DESC LIMIT 8`,
@@ -175,24 +177,24 @@ export async function getAnalyticsSnapshot(
     hogql(
       `SELECT path, count() AS c FROM (
          SELECT properties.$session_id AS sid, argMax(properties.$pathname, timestamp) AS path
-         FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${d} DAY
+         FROM events WHERE event = '$pageview' AND ${NO_ADMIN} AND timestamp >= now() - INTERVAL ${d} DAY
            AND properties.$session_id IS NOT NULL
          GROUP BY sid
        ) GROUP BY path ORDER BY c DESC LIMIT 8`,
     ),
     hogql(
       `SELECT coalesce(nullif(properties.$referring_domain, ''), '$direct') AS src, count() AS c
-       FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${d} DAY
+       FROM events WHERE event = '$pageview' AND ${NO_ADMIN} AND timestamp >= now() - INTERVAL ${d} DAY
        GROUP BY src ORDER BY c DESC LIMIT 8`,
     ),
     hogql(
       `SELECT coalesce(nullif(properties.$device_type, ''), 'Unknown') AS dv, count() AS c
-       FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${d} DAY
+       FROM events WHERE event = '$pageview' AND ${NO_ADMIN} AND timestamp >= now() - INTERVAL ${d} DAY
        GROUP BY dv ORDER BY c DESC`,
     ),
     hogql(
       `SELECT coalesce(nullif(properties.$geoip_country_name, ''), 'Unknown') AS c, count() AS nn
-       FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${d} DAY
+       FROM events WHERE event = '$pageview' AND ${NO_ADMIN} AND timestamp >= now() - INTERVAL ${d} DAY
        GROUP BY c ORDER BY nn DESC LIMIT 6`,
     ),
     hogql(
@@ -201,7 +203,7 @@ export async function getAnalyticsSnapshot(
     ),
     hogql(
       `SELECT
-         countIf(event = '$pageview'),
+         countIf(event = '$pageview' AND ${NO_ADMIN}),
          countIf(event = '$pageview' AND properties.$pathname = '/book'),
          countIf(event = 'booking_submitted')
        FROM events WHERE timestamp >= now() - INTERVAL ${d} DAY`,
@@ -210,14 +212,15 @@ export async function getAnalyticsSnapshot(
     hogql(
       `SELECT countIf(c = 1), count(), sum(c) FROM (
          SELECT properties.$session_id AS sid, count() AS c
-         FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${d} DAY
+         FROM events WHERE event = '$pageview' AND ${NO_ADMIN} AND timestamp >= now() - INTERVAL ${d} DAY
            AND properties.$session_id IS NOT NULL
          GROUP BY sid
        )`,
     ),
     hogql(
       `SELECT timestamp, event, coalesce(properties.$pathname, '') AS path
-       FROM events ORDER BY timestamp DESC LIMIT 20`,
+       FROM events WHERE NOT (event = '$pageview' AND properties.$pathname ILIKE '/admin%')
+       ORDER BY timestamp DESC LIMIT 20`,
     ),
   ]);
 

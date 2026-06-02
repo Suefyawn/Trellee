@@ -17,6 +17,7 @@ import {
   RANGES,
   normalizeRange,
 } from "@/lib/posthog-server";
+import { getGscSnapshot, gscEnvStatus } from "@/lib/gsc-server";
 import { timeAgo } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -275,7 +276,10 @@ export default async function AdminAnalyticsPage({
 }) {
   const ph = posthogAppHost();
   const range = normalizeRange((await searchParams).range);
-  const data = await getAnalyticsSnapshot(range);
+  const [data, gsc] = await Promise.all([
+    getAnalyticsSnapshot(range),
+    getGscSnapshot(28),
+  ]);
   const periodLabel = RANGE_LABEL[range] ?? `${range} days`;
 
   const links = [
@@ -607,6 +611,121 @@ export default async function AdminAnalyticsPage({
             </div>
           </>
         )}
+
+        {/* Search Console — independent of PostHog; shows a connect card until
+            the service account + verified domain are configured. */}
+        <div className="mt-6">
+          <div className="flex items-baseline justify-between mb-3">
+            <span className="t-mono text-muted text-xs uppercase tracking-wider">
+              Search · Google Search Console
+            </span>
+            {gsc ? (
+              <span className="t-mono text-muted text-[10px]">
+                last {gsc.rangeDays} days
+              </span>
+            ) : null}
+          </div>
+          {gsc ? (
+            <>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                {[
+                  { label: "Clicks", value: gsc.totals.clicks.toLocaleString() },
+                  {
+                    label: "Impressions",
+                    value: gsc.totals.impressions.toLocaleString(),
+                  },
+                  { label: "Avg CTR", value: `${(gsc.totals.ctr * 100).toFixed(1)}%` },
+                  { label: "Avg position", value: gsc.totals.position.toFixed(1) },
+                ].map((s) => (
+                  <div key={s.label} className="surface-card p-4">
+                    <div className="t-mono text-muted text-[11px] uppercase tracking-wider">
+                      {s.label}
+                    </div>
+                    <div className="font-display text-2xl mt-1">{s.value}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="grid lg:grid-cols-2 gap-3 mt-3">
+                <Panel title="Top search queries" hint="clicks · avg position">
+                  {gsc.topQueries.length === 0 ? (
+                    <p className="t-small text-muted p-1">No query data yet.</p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {gsc.topQueries.map((q) => (
+                        <li
+                          key={q.query}
+                          className="flex items-center justify-between gap-3 t-small"
+                        >
+                          <span className="text-fg truncate">{q.query}</span>
+                          <span className="t-mono text-muted text-xs shrink-0">
+                            {q.clicks} · #{q.position.toFixed(0)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </Panel>
+                <Panel title="Top landing pages" hint="clicks">
+                  <BarList
+                    rows={gsc.topPages.map((p) => ({
+                      label: p.page.replace(/^https?:\/\/[^/]+/, "") || "/",
+                      value: p.clicks,
+                    }))}
+                    emptyLabel="No page data yet."
+                  />
+                </Panel>
+              </div>
+            </>
+          ) : (
+            (() => {
+              const st = gscEnvStatus();
+              return (
+                <div className="rounded-lg border border-border bg-surface-2/30 p-6">
+                  <h3 className="t-heading-l font-display">Connect Search Console</h3>
+                  <p className="t-body text-muted mt-2 max-w-2xl">
+                    See the real Google searches that bring people in — queries,
+                    impressions, clicks, and average position. Best set up once the
+                    site is live on its domain and verified in Search Console.
+                  </p>
+                  <ol className="mt-4 space-y-1.5 t-small text-muted list-decimal pl-5 max-w-2xl">
+                    <li>
+                      In Google Cloud, create a service account, enable the{" "}
+                      <span className="text-fg">Search Console API</span>, and download
+                      its JSON key.
+                    </li>
+                    <li>
+                      In Search Console → Settings → Users and permissions, add the
+                      service-account email as a user (Full or Restricted).
+                    </li>
+                    <li>
+                      In Vercel, set{" "}
+                      <span className="t-mono text-fg">GSC_SERVICE_ACCOUNT_JSON</span>{" "}
+                      (the whole JSON) and{" "}
+                      <span className="t-mono text-fg">GSC_SITE_URL</span> (e.g.{" "}
+                      <span className="t-mono">sc-domain:trellee.com</span>), then
+                      redeploy.
+                    </li>
+                  </ol>
+                  <div className="mt-5 pt-4 border-t border-border/60">
+                    <div className="t-mono text-muted text-[11px] uppercase tracking-wider mb-2">
+                      What this server currently sees
+                    </div>
+                    <ul className="space-y-1 t-small">
+                      <li className={st.account ? "text-brand-500" : "text-danger"}>
+                        {st.account ? "✓" : "✗"} GSC_SERVICE_ACCOUNT_JSON
+                        {st.serviceEmail ? ` (${st.serviceEmail})` : " — not detected"}
+                      </li>
+                      <li className={st.site ? "text-brand-500" : "text-danger"}>
+                        {st.site ? "✓" : "✗"} GSC_SITE_URL
+                        {st.site ? ` = ${st.site}` : " — not detected"}
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              );
+            })()
+          )}
+        </div>
 
         {/* Deep links — always available */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-3">
