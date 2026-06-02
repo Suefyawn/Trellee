@@ -159,7 +159,7 @@ export default async function HomePage() {
             On lg+, lock to 140px rows so the bento math works.
           */}
           <div
-            className="grid grid-cols-12 gap-3 lg:auto-rows-[140px]"
+            className="grid grid-cols-12 gap-3 lg:auto-rows-[150px]"
             style={{ gridAutoFlow: "dense" }}
           >
             {services.map((service, idx) => {
@@ -228,7 +228,9 @@ export default async function HomePage() {
                       className={`font-display max-w-md ${
                         service.tile_size === "xl"
                           ? "t-heading-xl"
-                          : "t-heading-l line-clamp-2"
+                          : service.tile_size === "md"
+                            ? "text-[1.0625rem] leading-snug line-clamp-2"
+                            : "t-heading-l line-clamp-2"
                       }`}
                     >
                       {service.tile_size === "sm"

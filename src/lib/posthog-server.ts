@@ -17,7 +17,25 @@ const KEY = process.env.POSTHOG_PERSONAL_API_KEY;
 const PROJECT = process.env.POSTHOG_PROJECT_ID;
 
 export function analyticsConfigured(): boolean {
-  return !!KEY && !!PROJECT;
+  return !!process.env.POSTHOG_PERSONAL_API_KEY && !!process.env.POSTHOG_PROJECT_ID;
+}
+
+/**
+ * Safe diagnostic for the "Connect" panel: reports which env vars the running
+ * server can see, WITHOUT ever exposing their values. `key`/`project` are just
+ * presence booleans; `projectIdLen` helps catch an accidentally-empty or
+ * whitespace value.
+ */
+export function analyticsEnvStatus() {
+  const key = process.env.POSTHOG_PERSONAL_API_KEY ?? "";
+  const project = process.env.POSTHOG_PROJECT_ID ?? "";
+  return {
+    key: key.trim().length > 0,
+    project: project.trim().length > 0,
+    projectId: project.trim(), // the project id is not a secret
+    keyPrefix: key.trim().slice(0, 4), // e.g. "phx_" / "phc_" — helps spot a wrong key type
+    host: HOST,
+  };
 }
 
 /** Run a HogQL query; returns an array of row-arrays, or null if unavailable. */
