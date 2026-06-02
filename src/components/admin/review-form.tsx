@@ -8,6 +8,7 @@ import { upsertReviewAction } from "@/app/admin/_actions/wrappers";
 import { uploadAsset } from "@/app/admin/_actions/reviews";
 import type { ProjectRow, ReviewRow } from "@/lib/types/database";
 import { Field, Section } from "./ui";
+import { ImageUpload } from "./image-upload";
 
 export function ReviewForm({
   initial,
@@ -171,23 +172,14 @@ export function ReviewForm({
               onChange={(e) => set("author_company", e.target.value)}
             />
           </Field>
-          <Field label="Avatar (optional)" hint="Upload or paste URL.">
-            <input
-              className="input"
+          <div>
+            <ImageUpload
+              label="Avatar (optional)"
+              rounded
               value={form.author_avatar_url}
-              onChange={(e) => set("author_avatar_url", e.target.value)}
-              placeholder="https://…"
+              onChange={(url) => set("author_avatar_url", url)}
             />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleUpload(e, "media", "avatar")}
-              className="mt-2 t-small text-muted"
-            />
-            {uploading === "avatar" ? (
-              <p className="t-mono text-muted text-xs mt-1">Uploading…</p>
-            ) : null}
-          </Field>
+          </div>
         </div>
       </Section>
 
@@ -231,22 +223,12 @@ export function ReviewForm({
               <p className="t-mono text-muted text-xs mt-1">Uploading…</p>
             ) : null}
           </Field>
-          <Field label="Thumbnail / poster (optional)">
-            <input
-              className="input"
-              value={form.video_thumbnail_url}
-              onChange={(e) => set("video_thumbnail_url", e.target.value)}
-            />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleUpload(e, "media", "thumb")}
-              className="mt-2 t-small text-muted"
-            />
-            {uploading === "thumb" ? (
-              <p className="t-mono text-muted text-xs mt-1">Uploading…</p>
-            ) : null}
-          </Field>
+          <ImageUpload
+            label="Thumbnail / poster (optional)"
+            aspect="16 / 9"
+            value={form.video_thumbnail_url}
+            onChange={(url) => set("video_thumbnail_url", url)}
+          />
           <Field label="Duration" hint="Format: M:SS (e.g. 1:24)">
             <input
               className="input w-32"
