@@ -45,7 +45,7 @@ export default async function EditPmProjectPage({
         back={{ href: "/admin/pm", label: "Projects" }}
         actions={
           <DeleteButton
-            onDelete={() => deletePmProjectAction(project.id)}
+            onDelete={deletePmProjectAction.bind(null, project.id)}
             redirectTo="/admin/pm"
             label="Delete"
             confirmText="Confirm delete"

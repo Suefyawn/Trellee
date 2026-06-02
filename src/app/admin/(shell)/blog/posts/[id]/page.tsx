@@ -61,7 +61,7 @@ export default async function EditBlogPostPage({
         back={{ href: "/admin/blog/posts", label: "Posts" }}
         actions={
           <DeleteButton
-            onDelete={() => deleteBlogPostAction(data.id)}
+            onDelete={deleteBlogPostAction.bind(null, data.id)}
             redirectTo="/admin/blog/posts"
             label="Delete post"
             confirmText="Confirm delete"
