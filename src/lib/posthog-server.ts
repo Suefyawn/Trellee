@@ -63,12 +63,33 @@ export async function hogql(query: string): Promise<unknown[][] | null> {
   }
 }
 
+/** Allowed dashboard ranges (days). */
+export const RANGES = [7, 30, 90] as const;
+export type RangeDays = (typeof RANGES)[number];
+
+export function normalizeRange(v: unknown): RangeDays {
+  const n = Number(v);
+  return (RANGES as readonly number[]).includes(n) ? (n as RangeDays) : 7;
+}
+
 export type AnalyticsSnapshot = {
-  pageviews7d: number;
-  visitors7d: number;
-  pageviewsPrev7d: number;
+  rangeDays: number;
+  totals: {
+    pageviews: number;
+    visitors: number;
+    sessions: number;
+    conversions: number;
+    pageviewsPrev: number;
+    visitorsPrev: number;
+    sessionsPrev: number;
+    conversionsPrev: number;
+  };
+  bounceRate: number; // 0–100, share of sessions with a single pageview
+  avgPagesPerSession: number;
   trend: { date: string; pageviews: number; visitors: number }[];
   topPages: { path: string; views: number }[];
+  entryPages: { path: string; sessions: number }[];
+  exitPages: { path: string; sessions: number }[];
   topSources: { source: string; views: number }[];
   devices: { device: string; views: number }[];
   countries: { country: string; views: number }[];
@@ -80,71 +101,155 @@ export type AnalyticsSnapshot = {
 const n = (v: unknown) => Number(v ?? 0);
 const s = (v: unknown) => String(v ?? "");
 
-/** Fetch the full dashboard snapshot in parallel. Returns null if not configured. */
-export async function getAnalyticsSnapshot(): Promise<AnalyticsSnapshot | null> {
+/**
+ * Fetch the full dashboard snapshot for the given range (in days), in parallel.
+ * Returns null if not configured or the core query fails.
+ */
+export async function getAnalyticsSnapshot(
+  rangeDays: number = 7,
+): Promise<AnalyticsSnapshot | null> {
   if (!analyticsConfigured()) return null;
+
+  const d = Number.isFinite(rangeDays) && rangeDays > 0 ? Math.floor(rangeDays) : 7;
+  const prev = d * 2;
+  // Bucket the trend by day for short ranges, by week for the 90-day view so the
+  // chart stays readable.
+  const bucket = d > 45 ? "toStartOfWeek(timestamp)" : "toDate(timestamp)";
+  const CONV = "('booking_submitted', 'contact_submitted', 'newsletter_subscribed')";
 
   const [
     kpis,
-    prev,
+    kpisPrev,
+    convNow,
+    convPrev,
     trend,
     topPages,
+    entryPages,
+    exitPages,
     topSources,
     devices,
     countries,
     conversions,
     funnel,
+    bounce,
     recent,
   ] = await Promise.all([
+    // Current-period pageviews / visitors / sessions in one pass.
     hogql(
-      `SELECT count() , count(distinct person_id) FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL 7 DAY`,
+      `SELECT count(), count(distinct person_id), count(distinct properties.$session_id)
+       FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${d} DAY`,
+    ),
+    // Previous equal-length period, for deltas.
+    hogql(
+      `SELECT count(), count(distinct person_id), count(distinct properties.$session_id)
+       FROM events WHERE event = '$pageview'
+         AND timestamp >= now() - INTERVAL ${prev} DAY AND timestamp < now() - INTERVAL ${d} DAY`,
     ),
     hogql(
-      `SELECT count() FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL 14 DAY AND timestamp < now() - INTERVAL 7 DAY`,
+      `SELECT count() FROM events WHERE event IN ${CONV} AND timestamp >= now() - INTERVAL ${d} DAY`,
     ),
     hogql(
-      `SELECT toDate(timestamp) AS d, count() , count(distinct person_id) FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL 14 DAY GROUP BY d ORDER BY d`,
+      `SELECT count() FROM events WHERE event IN ${CONV}
+         AND timestamp >= now() - INTERVAL ${prev} DAY AND timestamp < now() - INTERVAL ${d} DAY`,
     ),
     hogql(
-      `SELECT properties.$pathname AS path, count() AS c FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL 7 DAY GROUP BY path ORDER BY c DESC LIMIT 10`,
+      `SELECT ${bucket} AS d, count(), count(distinct person_id)
+       FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${d} DAY
+       GROUP BY d ORDER BY d`,
     ),
     hogql(
-      `SELECT coalesce(nullif(properties.$referring_domain, ''), '$direct') AS src, count() AS c FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL 7 DAY GROUP BY src ORDER BY c DESC LIMIT 8`,
+      `SELECT properties.$pathname AS path, count() AS c
+       FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${d} DAY
+       GROUP BY path ORDER BY c DESC LIMIT 10`,
+    ),
+    // Entry page = first pageview path of each session.
+    hogql(
+      `SELECT path, count() AS c FROM (
+         SELECT properties.$session_id AS sid, argMin(properties.$pathname, timestamp) AS path
+         FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${d} DAY
+           AND properties.$session_id IS NOT NULL
+         GROUP BY sid
+       ) GROUP BY path ORDER BY c DESC LIMIT 8`,
+    ),
+    // Exit page = last pageview path of each session.
+    hogql(
+      `SELECT path, count() AS c FROM (
+         SELECT properties.$session_id AS sid, argMax(properties.$pathname, timestamp) AS path
+         FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${d} DAY
+           AND properties.$session_id IS NOT NULL
+         GROUP BY sid
+       ) GROUP BY path ORDER BY c DESC LIMIT 8`,
     ),
     hogql(
-      `SELECT coalesce(nullif(properties.$device_type, ''), 'Unknown') AS d, count() AS c FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL 7 DAY GROUP BY d ORDER BY c DESC`,
+      `SELECT coalesce(nullif(properties.$referring_domain, ''), '$direct') AS src, count() AS c
+       FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${d} DAY
+       GROUP BY src ORDER BY c DESC LIMIT 8`,
     ),
     hogql(
-      `SELECT coalesce(nullif(properties.$geoip_country_name, ''), 'Unknown') AS c, count() AS n FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL 7 DAY GROUP BY c ORDER BY n DESC LIMIT 6`,
+      `SELECT coalesce(nullif(properties.$device_type, ''), 'Unknown') AS dv, count() AS c
+       FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${d} DAY
+       GROUP BY dv ORDER BY c DESC`,
     ),
     hogql(
-      `SELECT event, count() AS c FROM events WHERE event IN ('booking_submitted', 'contact_submitted', 'newsletter_subscribed') AND timestamp >= now() - INTERVAL 30 DAY GROUP BY event ORDER BY c DESC`,
+      `SELECT coalesce(nullif(properties.$geoip_country_name, ''), 'Unknown') AS c, count() AS nn
+       FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${d} DAY
+       GROUP BY c ORDER BY nn DESC LIMIT 6`,
+    ),
+    hogql(
+      `SELECT event, count() AS c FROM events WHERE event IN ${CONV}
+         AND timestamp >= now() - INTERVAL ${d} DAY GROUP BY event ORDER BY c DESC`,
     ),
     hogql(
       `SELECT
-         countIf(event = '$pageview') ,
-         countIf(event = '$pageview' AND properties.$pathname = '/book') ,
+         countIf(event = '$pageview'),
+         countIf(event = '$pageview' AND properties.$pathname = '/book'),
          countIf(event = 'booking_submitted')
-       FROM events WHERE timestamp >= now() - INTERVAL 30 DAY`,
+       FROM events WHERE timestamp >= now() - INTERVAL ${d} DAY`,
+    ),
+    // Bounce: sessions with exactly one pageview / all sessions.
+    hogql(
+      `SELECT countIf(c = 1), count(), sum(c) FROM (
+         SELECT properties.$session_id AS sid, count() AS c
+         FROM events WHERE event = '$pageview' AND timestamp >= now() - INTERVAL ${d} DAY
+           AND properties.$session_id IS NOT NULL
+         GROUP BY sid
+       )`,
     ),
     hogql(
-      `SELECT timestamp, event, coalesce(properties.$pathname, '') AS path FROM events ORDER BY timestamp DESC LIMIT 20`,
+      `SELECT timestamp, event, coalesce(properties.$pathname, '') AS path
+       FROM events ORDER BY timestamp DESC LIMIT 20`,
     ),
   ]);
 
   // If the core query failed (bad key / project), treat the whole thing as unavailable.
   if (kpis === null) return null;
 
+  const bouncedSessions = n(bounce?.[0]?.[0]);
+  const totalSessions = n(bounce?.[0]?.[1]);
+  const totalPv = n(bounce?.[0]?.[2]);
+
   return {
-    pageviews7d: n(kpis[0]?.[0]),
-    visitors7d: n(kpis[0]?.[1]),
-    pageviewsPrev7d: n(prev?.[0]?.[0]),
+    rangeDays: d,
+    totals: {
+      pageviews: n(kpis[0]?.[0]),
+      visitors: n(kpis[0]?.[1]),
+      sessions: n(kpis[0]?.[2]),
+      conversions: n(convNow?.[0]?.[0]),
+      pageviewsPrev: n(kpisPrev?.[0]?.[0]),
+      visitorsPrev: n(kpisPrev?.[0]?.[1]),
+      sessionsPrev: n(kpisPrev?.[0]?.[2]),
+      conversionsPrev: n(convPrev?.[0]?.[0]),
+    },
+    bounceRate: totalSessions > 0 ? Math.round((bouncedSessions / totalSessions) * 100) : 0,
+    avgPagesPerSession: totalSessions > 0 ? totalPv / totalSessions : 0,
     trend: (trend ?? []).map((r) => ({
       date: s(r[0]),
       pageviews: n(r[1]),
       visitors: n(r[2]),
     })),
     topPages: (topPages ?? []).map((r) => ({ path: s(r[0]) || "/", views: n(r[1]) })),
+    entryPages: (entryPages ?? []).map((r) => ({ path: s(r[0]) || "/", sessions: n(r[1]) })),
+    exitPages: (exitPages ?? []).map((r) => ({ path: s(r[0]) || "/", sessions: n(r[1]) })),
     topSources: (topSources ?? []).map((r) => ({
       source: s(r[0]) === "$direct" ? "Direct / none" : s(r[0]),
       views: n(r[1]),
