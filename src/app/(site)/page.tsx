@@ -21,6 +21,10 @@ import { VideoReview } from "@/components/site/video-review";
 // Title + description inherit the site-wide defaults from the root layout; we
 // only pin the canonical URL here so the homepage isn't deduped against any
 // query-string variants.
+// Rebuild from the CMS at most every 10 minutes (ISR), so content edits in
+// the admin go live without a manual redeploy.
+export const revalidate = 600;
+
 export const metadata = {
   alternates: { canonical: "/" },
 };

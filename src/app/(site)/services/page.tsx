@@ -4,6 +4,10 @@ import { getServices } from "@/lib/cms";
 import { Reveal } from "@/components/site/reveal";
 import { ServiceIcon } from "@/components/site/service-icon";
 
+// Rebuild from the CMS at most every 10 minutes (ISR), so content edits in
+// the admin go live without a manual redeploy.
+export const revalidate = 600;
+
 export const metadata = {
   title: "Services",
   description:
