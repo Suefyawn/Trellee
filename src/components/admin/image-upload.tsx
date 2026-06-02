@@ -2,21 +2,10 @@
 
 import { useRef, useState } from "react";
 import { UploadCloud, X, Loader2, Link as LinkIcon } from "lucide-react";
-import { uploadAsset } from "@/app/admin/_actions/reviews";
+import { MAX_UPLOAD_MB, uploadImageFile } from "@/lib/upload-client";
 import { cn } from "@/lib/utils";
 
-const MAX_MB = 6;
-
-/** Encode a File to base64 in chunks (avoids call-stack overflow on big files). */
-async function fileToBase64(file: File): Promise<string> {
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  let binary = "";
-  const chunk = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
-  }
-  return btoa(binary);
-}
+const MAX_MB = MAX_UPLOAD_MB;
 
 /**
  * Drag-and-drop image upload with preview. Uploads to the public `media`
@@ -46,31 +35,12 @@ export function ImageUpload({
 
   async function handleFile(file?: File | null) {
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setErr("Please choose an image file.");
-      return;
-    }
-    if (file.size > MAX_MB * 1024 * 1024) {
-      setErr(`Image must be under ${MAX_MB}MB.`);
-      return;
-    }
     setErr(null);
     setBusy(true);
-    try {
-      const base64 = await fileToBase64(file);
-      const res = await uploadAsset({
-        bucket: "media",
-        filename: file.name,
-        contentType: file.type || "image/jpeg",
-        base64,
-      });
-      if (res.ok) onChange(res.url);
-      else setErr(res.error);
-    } catch (e) {
-      setErr(String(e));
-    } finally {
-      setBusy(false);
-    }
+    const res = await uploadImageFile(file);
+    if (res.ok) onChange(res.url);
+    else setErr(res.error);
+    setBusy(false);
   }
 
   return (

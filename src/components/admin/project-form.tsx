@@ -10,6 +10,7 @@ import { slugify } from "@/lib/utils";
 import { Field, Section } from "./ui";
 import { JsonListEditor } from "./json-list-editor";
 import { ImageUpload } from "./image-upload";
+import { GalleryUpload } from "./gallery-upload";
 
 export function ProjectForm({
   initial,
@@ -232,16 +233,7 @@ export function ProjectForm({
       </Section>
 
       <Section title="Gallery" description="Screenshots or mockup images shown below the hero.">
-        <JsonListEditor
-          fields={[
-            { key: "url", label: "Image URL", type: "text" },
-            { key: "caption", label: "Caption (optional)", type: "text" },
-          ]}
-          value={gallery}
-          onChange={setGallery}
-          newItem={{ url: "", caption: "", type: "image" }}
-          emptyLabel="Add image"
-        />
+        <GalleryUpload value={gallery} onChange={setGallery} />
       </Section>
 
       <Section title="Media + assets">
