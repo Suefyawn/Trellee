@@ -380,6 +380,14 @@ export type NewsletterSubscriberRow = {
   created_at: string;
 };
 
+export type IntegrationTokenRow = {
+  provider: string;
+  refresh_token: string;
+  account_email: string | null;
+  scope: string | null;
+  updated_at: string;
+};
+
 type SelectInsertUpdate<R> = {
   Row: R;
   Insert: { [K in keyof R]?: R[K] };
@@ -411,6 +419,7 @@ export type Database = {
       pm_tasks: SelectInsertUpdate<PmTaskRow>;
       monitored_sites: SelectInsertUpdate<MonitoredSiteRow>;
       newsletter_subscribers: SelectInsertUpdate<NewsletterSubscriberRow>;
+      integration_tokens: SelectInsertUpdate<IntegrationTokenRow>;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

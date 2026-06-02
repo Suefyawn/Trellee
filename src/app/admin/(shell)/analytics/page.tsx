@@ -18,6 +18,7 @@ import {
   normalizeRange,
 } from "@/lib/posthog-server";
 import { loadGsc, gscEnvStatus } from "@/lib/gsc-server";
+import { googleOAuthStatus } from "@/lib/google-oauth";
 import { timeAgo } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -272,17 +273,21 @@ function RangeTabs({ current }: { current: number }) {
 export default async function AdminAnalyticsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ range?: string }>;
+  searchParams: Promise<{ range?: string; gsc?: string }>;
 }) {
   const ph = posthogAppHost();
-  const range = normalizeRange((await searchParams).range);
-  const [data, gscResult] = await Promise.all([
+  const sp = await searchParams;
+  const range = normalizeRange(sp.range);
+  const gscNotice = sp.gsc;
+  const [data, gscResult, oauth] = await Promise.all([
     getAnalyticsSnapshot(range),
     loadGsc(28),
+    googleOAuthStatus(),
   ]);
   const gsc = gscResult.snapshot;
   const gscError = gscResult.error;
   const periodLabel = RANGE_LABEL[range] ?? `${range} days`;
+  const gscRedirectUri = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/admin/analytics/google/callback`;
 
   const links = [
     { label: "Web analytics", href: `${ph}/web`, icon: Activity },
@@ -681,11 +686,39 @@ export default async function AdminAnalyticsPage({
           ) : (
             (() => {
               const st = gscEnvStatus();
+              const NOTICE: Record<string, { ok: boolean; text: string }> = {
+                connected: {
+                  ok: true,
+                  text: "Google account connected. Search data appears here within a day (Google has a ~2-day reporting lag).",
+                },
+                denied: { ok: false, text: "Connection cancelled — you didn't grant access." },
+                state_mismatch: { ok: false, text: "Security check failed — please try connecting again." },
+                exchange_failed: {
+                  ok: false,
+                  text: "Google didn't return a usable token. Remove the app at myaccount.google.com/permissions and reconnect.",
+                },
+                oauth_unconfigured: {
+                  ok: false,
+                  text: "Set GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET first.",
+                },
+              };
+              const notice = gscNotice ? NOTICE[gscNotice] : undefined;
               return (
                 <div className="rounded-lg border border-border bg-surface-2/30 p-6">
                   <h3 className="t-heading-l font-display">
                     {gscError ? "Search Console: needs attention" : "Connect Search Console"}
                   </h3>
+                  {notice ? (
+                    <div
+                      className={`mt-3 rounded-md border p-3 ${
+                        notice.ok
+                          ? "border-brand-500/40 bg-brand-500/5"
+                          : "border-danger/40 bg-danger/5"
+                      }`}
+                    >
+                      <p className="t-small text-fg">{notice.text}</p>
+                    </div>
+                  ) : null}
                   {gscError ? (
                     <div className="mt-3 rounded-md border border-danger/40 bg-danger/5 p-3">
                       <p className="t-small text-fg">{gscError}</p>
@@ -693,40 +726,71 @@ export default async function AdminAnalyticsPage({
                   ) : null}
                   <p className="t-body text-muted mt-3 max-w-2xl">
                     See the real Google searches that bring people in — queries,
-                    impressions, clicks, and average position. Best set up once the
-                    site is live on its domain and verified in Search Console.
+                    impressions, clicks, and average position.
                   </p>
-                  <ol className="mt-4 space-y-1.5 t-small text-muted list-decimal pl-5 max-w-2xl">
-                    <li>
-                      In Google Cloud, create a service account, enable the{" "}
-                      <span className="text-fg">Search Console API</span>, and download
-                      its JSON key.
-                    </li>
-                    <li>
-                      In Search Console → Settings → Users and permissions, add the
-                      service-account email as a user (Full or Restricted).
-                    </li>
-                    <li>
-                      In Vercel, set{" "}
-                      <span className="t-mono text-fg">GSC_SERVICE_ACCOUNT_JSON</span>{" "}
-                      (the whole JSON) and{" "}
-                      <span className="t-mono text-fg">GSC_SITE_URL</span> (e.g.{" "}
-                      <span className="t-mono">sc-domain:trellee.com</span>), then
-                      redeploy.
-                    </li>
-                  </ol>
+
+                  {/* Primary path: one-click OAuth with your own Google account */}
+                  <div className="mt-5">
+                    {oauth.clientConfigured ? (
+                      oauth.connected ? (
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <span className="t-small text-brand-500">
+                            ✓ Connected{oauth.email ? ` as ${oauth.email}` : ""}
+                          </span>
+                          <a href="/admin/analytics/google/connect" className="btn btn-ghost btn-sm">
+                            Reconnect
+                          </a>
+                          <span className="t-small text-muted">
+                            {gscError
+                              ? "Connected, but this account can't read the property above — make sure it has access to it in Search Console."
+                              : "Search data will populate shortly."}
+                          </span>
+                        </div>
+                      ) : (
+                        <div>
+                          <a href="/admin/analytics/google/connect" className="btn btn-primary">
+                            Connect Google account
+                          </a>
+                          <p className="t-small text-muted mt-2 max-w-2xl">
+                            One-time sign-in with your own Google account (read-only Search
+                            Console). No service-account user grant needed — the account just
+                            has to have access to the{" "}
+                            <span className="t-mono">{st.site || "GSC_SITE_URL"}</span> property.
+                          </p>
+                        </div>
+                      )
+                    ) : (
+                      <div className="rounded-md border border-border/60 p-3">
+                        <p className="t-small text-muted max-w-2xl">
+                          To enable one-click connect, create an{" "}
+                          <span className="text-fg">OAuth 2.0 Web client</span> in Google Cloud
+                          with redirect URI{" "}
+                          <span className="t-mono text-fg break-all">{gscRedirectUri}</span>, then
+                          set <span className="t-mono text-fg">GOOGLE_OAUTH_CLIENT_ID</span> and{" "}
+                          <span className="t-mono text-fg">GOOGLE_OAUTH_CLIENT_SECRET</span> in
+                          Vercel and redeploy. A “Connect Google account” button will appear here.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Diagnostic */}
                   <div className="mt-5 pt-4 border-t border-border/60">
                     <div className="t-mono text-muted text-[11px] uppercase tracking-wider mb-2">
                       What this server currently sees
                     </div>
                     <ul className="space-y-1 t-small">
-                      <li className={st.account ? "text-brand-500" : "text-danger"}>
-                        {st.account ? "✓" : "✗"} GSC_SERVICE_ACCOUNT_JSON
-                        {st.serviceEmail ? ` (${st.serviceEmail})` : " — not detected"}
+                      <li className={oauth.clientConfigured ? "text-brand-500" : "text-muted"}>
+                        {oauth.clientConfigured ? "✓" : "○"} OAuth client (GOOGLE_OAUTH_CLIENT_ID
+                        /SECRET){oauth.connected ? " · connected" : ""}
                       </li>
                       <li className={st.site ? "text-brand-500" : "text-danger"}>
                         {st.site ? "✓" : "✗"} GSC_SITE_URL
                         {st.site ? ` = ${st.site}` : " — not detected"}
+                      </li>
+                      <li className={st.account ? "text-brand-500" : "text-muted"}>
+                        {st.account ? "✓" : "○"} GSC_SERVICE_ACCOUNT_JSON (optional fallback)
+                        {st.serviceEmail ? ` · ${st.serviceEmail}` : ""}
                       </li>
                     </ul>
                   </div>
