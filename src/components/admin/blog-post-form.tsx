@@ -12,6 +12,7 @@ import type {
 } from "@/lib/types/database";
 import { slugify } from "@/lib/utils";
 import { Field, Section } from "./ui";
+import { ImageUpload } from "./image-upload";
 
 export function BlogPostForm({
   initial,
@@ -128,13 +129,12 @@ export function BlogPostForm({
               Supports headings (## / ###), paragraphs, and &gt; blockquotes.
             </p>
           </Field>
-          <Field label="Cover image URL">
-            <input
-              className="input"
-              value={form.cover_url}
-              onChange={(e) => set("cover_url", e.target.value)}
-            />
-          </Field>
+          <ImageUpload
+            label="Cover image"
+            aspect="16 / 9"
+            value={form.cover_url}
+            onChange={(url) => set("cover_url", url)}
+          />
           <Field label="Reading time (min)">
             <input
               type="number"
