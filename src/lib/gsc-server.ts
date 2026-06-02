@@ -16,6 +16,7 @@
  * explain *why* instead of showing a generic "connect" card.
  */
 import crypto from "node:crypto";
+import { getGoogleAccessToken } from "@/lib/google-oauth";
 
 export function gscConfigured(): boolean {
   return (
@@ -140,18 +141,25 @@ export type GscResult = { snapshot: GscSnapshot | null; error: string | null };
 
 /** Load a Search Console snapshot for the last `days` days (with a reason on failure). */
 export async function loadGsc(days = 28): Promise<GscResult> {
-  if (!gscConfigured()) return { snapshot: null, error: null };
+  const site = process.env.GSC_SITE_URL?.trim();
+  if (!site) return { snapshot: null, error: null };
 
-  const token = await getAccessToken();
+  // Prefer the owner's OAuth token (no Search Console user grant needed); fall
+  // back to a service account if one is configured.
+  const oauthToken = await getGoogleAccessToken();
+  const usingOAuth = !!oauthToken;
+  const token = oauthToken ?? (await getAccessToken());
   if (!token) {
-    return {
-      snapshot: null,
-      error:
-        "Could not authenticate the service account. Check that GSC_SERVICE_ACCOUNT_JSON is the complete, unmodified key file (including the full private_key), and that the Search Console API is enabled in the Google Cloud project.",
-    };
+    if (process.env.GSC_SERVICE_ACCOUNT_JSON?.trim()) {
+      return {
+        snapshot: null,
+        error:
+          "Could not authenticate the service account. Check that GSC_SERVICE_ACCOUNT_JSON is the complete, unmodified key file (including the full private_key), and that the Search Console API is enabled in the Google Cloud project.",
+      };
+    }
+    // No auth method connected yet — show the connect options, not an error.
+    return { snapshot: null, error: null };
   }
-
-  const site = process.env.GSC_SITE_URL!.trim();
   // GSC data lags ~2 days; offset the window so the latest rows aren't empty.
   const end = new Date(Date.now() - 2 * 86400000);
   const start = new Date(end.getTime() - days * 86400000);
@@ -207,10 +215,12 @@ export async function loadGsc(days = 28): Promise<GscResult> {
   ]);
 
   if (overall.rows === null) {
-    const email = gscEnvStatus().serviceEmail || "the service account";
+    const who = usingOAuth
+      ? "the connected Google account"
+      : `"${gscEnvStatus().serviceEmail || "the service account"}"`;
     const hint =
       overall.status === 403
-        ? ` Most likely "${email}" hasn't been added as a user on the ${site} property in Search Console (Settings → Users and permissions), or that property isn't verified yet.`
+        ? ` ${who} doesn't have access to the ${site} property in Search Console — it must be a user/owner on that exact property, and the property must be verified.`
         : overall.status === 404
           ? ` No Search Console property matches GSC_SITE_URL = "${site}". Check the exact form: "sc-domain:trellee.com" for a Domain property, or "https://trellee.com/" for a URL-prefix property.`
           : "";
