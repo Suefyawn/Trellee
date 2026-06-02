@@ -163,7 +163,7 @@ export function AdminShell({
       <aside
         className={cn(
           "fixed top-0 left-0 z-50 w-72 h-dvh border-r border-border bg-surface/95 backdrop-blur-md flex flex-col transition-transform print:hidden",
-          "lg:static lg:h-auto lg:w-64 lg:bg-surface/40 lg:translate-x-0 lg:flex-shrink-0",
+          "lg:sticky lg:top-0 lg:w-64 lg:bg-surface/40 lg:translate-x-0 lg:flex-shrink-0",
           drawerOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
