@@ -43,7 +43,7 @@ export default async function EditInvoicePage({
               <Printer className="w-4 h-4" /> View / Print
             </Link>
             <DeleteButton
-              onDelete={() => deleteInvoiceAction(data.id)}
+              onDelete={deleteInvoiceAction.bind(null, data.id)}
               redirectTo="/admin/invoices"
               label="Delete"
               confirmText="Confirm delete"

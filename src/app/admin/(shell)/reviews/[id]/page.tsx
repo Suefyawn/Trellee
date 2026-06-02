@@ -58,7 +58,7 @@ export default async function EditReviewPage({
         back={{ href: "/admin/reviews", label: "Reviews" }}
         actions={
           <DeleteButton
-            onDelete={() => deleteReviewAction(data.id)}
+            onDelete={deleteReviewAction.bind(null, data.id)}
             redirectTo="/admin/reviews"
             label="Delete review"
             confirmText="Confirm delete"

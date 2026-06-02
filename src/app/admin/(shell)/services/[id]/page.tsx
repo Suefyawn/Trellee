@@ -77,7 +77,7 @@ export default async function EditServicePage({
         back={{ href: "/admin/services", label: "Services" }}
         actions={
           <DeleteButton
-            onDelete={() => deleteServiceAction(loaded.service.id)}
+            onDelete={deleteServiceAction.bind(null, loaded.service.id)}
             redirectTo="/admin/services"
             label="Delete service"
             confirmText="Confirm delete"
