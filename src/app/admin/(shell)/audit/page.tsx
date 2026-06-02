@@ -22,6 +22,9 @@ const ACTION = {
   INSERT: { verb: "created", cls: "text-brand-500 border-brand-500/40 bg-brand-500/5" },
   UPDATE: { verb: "updated", cls: "text-warning border-warning/40 bg-warning/5" },
   DELETE: { verb: "deleted", cls: "text-danger border-danger/40 bg-danger/5" },
+  LOGIN: { verb: "signed in", cls: "text-brand-500 border-brand-500/40 bg-brand-500/5" },
+  LOGOUT: { verb: "signed out", cls: "text-muted border-border bg-surface-2" },
+  LOGIN_FAILED: { verb: "login failed", cls: "text-danger border-danger/40 bg-danger/5" },
 } as const;
 
 export default async function AuditLogPage() {
