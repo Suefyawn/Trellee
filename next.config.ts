@@ -13,11 +13,11 @@ const supabaseHost = supabaseUrl ? new URL(supabaseUrl).hostname : "";
  * surface: no external/injected script sources, no <base> hijacking, no form
  * exfiltration to other origins, no framing (clickjacking), no plugins.
  *
- * SAFE BY DEFAULT: sent as `Content-Security-Policy-Report-Only`, which browsers
- * never enforce — it only logs violations to the console. Verify in the Vercel
- * preview, confirm zero unexpected violations, then set `CSP_ENFORCE=true` to
- * switch to the enforcing header. Allowlisted hosts cover Fontshare/Google
- * fonts, Supabase (images, video, auth/realtime), PostHog, and Sentry.
+ * ENFORCED by default (verified against the live site). Allowlisted hosts cover
+ * Fontshare/Google fonts, Supabase (images, video, auth/realtime), PostHog,
+ * Sentry, Google Tag Manager, and GA4. Set `CSP_ENFORCE=false` to fall back to
+ * `Content-Security-Policy-Report-Only` (logs violations without blocking) if a
+ * new integration needs a host added.
  */
 const csp = [
   "default-src 'self'",
@@ -28,15 +28,18 @@ const csp = [
   "script-src 'self' 'unsafe-inline' https://*.posthog.com https://www.googletagmanager.com",
   "style-src 'self' 'unsafe-inline' https://api.fontshare.com https://fonts.googleapis.com",
   "font-src 'self' data: https://cdn.fontshare.com https://fonts.gstatic.com",
-  "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://www.googletagmanager.com https://www.google-analytics.com",
+  "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://www.googletagmanager.com https://*.google-analytics.com",
   "media-src 'self' https://*.supabase.co",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.posthog.com https://*.ingest.sentry.io https://*.sentry.io https://www.googletagmanager.com https://www.google-analytics.com https://*.analytics.google.com",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.posthog.com https://*.ingest.sentry.io https://*.sentry.io https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
   "upgrade-insecure-requests",
 ].join("; ");
 
-const cspEnforce = process.env.CSP_ENFORCE === "true";
+// Enforced by default now that the policy is verified against the live site.
+// Kill-switch: set CSP_ENFORCE=false to drop back to report-only if a future
+// integration trips a violation.
+const cspEnforce = process.env.CSP_ENFORCE !== "false";
 
 // Applied to every response.
 const securityHeaders = [
