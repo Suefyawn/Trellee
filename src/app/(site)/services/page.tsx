@@ -3,6 +3,7 @@ import { ArrowUpRight } from "lucide-react";
 import { getServices } from "@/lib/cms";
 import { Reveal } from "@/components/site/reveal";
 import { ServiceIcon } from "@/components/site/service-icon";
+import { JsonLd } from "@/components/seo/json-ld";
 
 // Rebuild from the CMS at most every 10 minutes (ISR), so content edits in
 // the admin go live without a manual redeploy.
@@ -26,8 +27,27 @@ export default async function ServicesPage() {
   }, {});
   const categories = Object.keys(grouped);
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://trellee.com";
+  const itemList = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Trellee services",
+    itemListElement: services.map((s, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      item: {
+        "@type": "Service",
+        name: s.title,
+        ...(s.summary ? { description: s.summary } : {}),
+        url: `${siteUrl}/services/${s.slug}`,
+        provider: { "@type": "Organization", name: "Trellee", url: siteUrl },
+      },
+    })),
+  };
+
   return (
     <>
+      <JsonLd data={itemList} />
       <section className="relative pt-16 pb-12 lg:pt-24 lg:pb-16 overflow-hidden">
         <div className="mesh" />
         <div className="relative max-w-[1280px] mx-auto px-6 lg:px-10">
