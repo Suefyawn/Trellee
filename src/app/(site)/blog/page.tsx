@@ -9,6 +9,7 @@ import {
 import { Reveal } from "@/components/site/reveal";
 import { PostCover } from "@/components/site/post-cover";
 import { NewsletterForm } from "@/components/site/newsletter-form";
+import { BlogFilters } from "@/components/site/blog-filters";
 import { formatDate } from "@/lib/utils";
 
 // Rebuild from the CMS at most every 10 minutes (ISR), so content edits in
@@ -21,12 +22,7 @@ export const metadata = {
   alternates: { canonical: "/blog" },
 };
 
-export default async function BlogPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ category?: string }>;
-}) {
-  const params = await searchParams;
+export default async function BlogPage() {
   const [categories, allPosts, team, settings] = await Promise.all([
     getBlogCategories(),
     getBlogPosts(),
@@ -41,13 +37,7 @@ export default async function BlogPage({
   );
   const visibleCategories = categories.filter((c) => usedCategoryIds.has(c.id));
 
-  const activeCategory = params.category
-    ? categories.find((c) => c.slug === params.category)
-    : undefined;
-  const posts = activeCategory
-    ? allPosts.filter((p) => p.category_id === activeCategory.id)
-    : allPosts;
-
+  const posts = allPosts;
   const featured = posts.find((p) => p.featured) ?? posts[0];
   const rest = posts.filter((p) => p.id !== featured?.id);
 
@@ -74,36 +64,8 @@ export default async function BlogPage({
         </div>
       </section>
 
-      {/* Sticky filters */}
-      <section className="py-5 border-y border-border sticky top-16 z-30 backdrop-blur-md bg-bg/80">
-        <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-            <Link
-              href="/blog"
-              className={`px-3 py-1.5 rounded-md t-mono text-xs whitespace-nowrap transition ${
-                !params.category
-                  ? "bg-fg text-bg"
-                  : "text-muted hover:text-fg hover:bg-surface-2"
-              }`}
-            >
-              All notes
-            </Link>
-            {visibleCategories.map((c) => (
-              <Link
-                key={c.id}
-                href={`/blog?category=${c.slug}`}
-                className={`px-3 py-1.5 rounded-md t-mono text-xs whitespace-nowrap transition ${
-                  params.category === c.slug
-                    ? "bg-fg text-bg"
-                    : "text-muted hover:text-fg hover:bg-surface-2"
-                }`}
-              >
-                {c.name}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Sticky filters (client-side, keeps the page static) */}
+      <BlogFilters categories={visibleCategories} />
 
       {/* Posts */}
       <section className="py-16 lg:py-24">
@@ -113,11 +75,16 @@ export default async function BlogPage({
               No posts in this category yet. Check back soon.
             </p>
           ) : (
-            <>
+            <div id="blog-list">
               {/* Featured */}
               {featured ? (
                 <Link
                   href={`/blog/${featured.slug}`}
+                  data-cat={
+                    featured.category_id
+                      ? (catById.get(featured.category_id)?.slug ?? "")
+                      : ""
+                  }
                   className="surface-card overflow-hidden block group hover:border-border-strong transition mb-16"
                 >
                   <div className="grid lg:grid-cols-12">
@@ -194,6 +161,7 @@ export default async function BlogPage({
                     <Link
                       key={post.id}
                       href={`/blog/${post.slug}`}
+                      data-cat={cat?.slug ?? ""}
                       className="surface-card overflow-hidden group hover:border-border-strong transition flex flex-col"
                     >
                       {post.cover_url ? (
@@ -232,7 +200,14 @@ export default async function BlogPage({
                   );
                 })}
               </div>
-            </>
+              <p
+                id="blog-empty"
+                className="t-body text-muted"
+                style={{ display: "none" }}
+              >
+                No posts in this category yet.
+              </p>
+            </div>
           )}
         </div>
       </section>
