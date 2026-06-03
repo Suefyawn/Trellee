@@ -16,14 +16,9 @@ export const metadata = {
   alternates: { canonical: "/portfolio" },
 };
 
-export default async function PortfolioPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ category?: string }>;
-}) {
-  const params = await searchParams;
+export default async function PortfolioPage() {
   const [projects, services] = await Promise.all([
-    getProjects({ service: params.category }),
+    getProjects(),
     getServices(),
   ]);
 
@@ -48,7 +43,7 @@ export default async function PortfolioPage({
         </div>
       </section>
 
-      <PortfolioFilters services={services} active={params.category} />
+      <PortfolioFilters services={services} />
 
       <section className="py-16 lg:py-24">
         <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
@@ -57,13 +52,15 @@ export default async function PortfolioPage({
               No projects match this filter yet. Check back soon.
             </p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <>
+            <div id="portfolio-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {projects.map((p, i) => {
                 const isFeature = i === 0;
                 return (
                   <Link
                     key={p.id}
                     href={`/portfolio/${p.slug}`}
+                    data-cats={p.service_categories.join(" ")}
                     className={`bento-tile p-0 overflow-hidden group flex flex-col min-h-[340px] ${
                       isFeature
                         ? "md:col-span-2 lg:col-span-2 lg:row-span-2 lg:min-h-[700px]"
@@ -151,6 +148,14 @@ export default async function PortfolioPage({
                 );
               })}
             </div>
+            <p
+              id="portfolio-empty"
+              className="t-body text-muted"
+              style={{ display: "none" }}
+            >
+              No projects match this filter.
+            </p>
+            </>
           )}
         </div>
       </section>

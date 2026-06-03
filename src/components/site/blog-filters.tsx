@@ -1,32 +1,29 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { ServiceRow } from "@/lib/types/database";
+import type { BlogCategoryRow } from "@/lib/types/database";
 
 /**
- * Client-side portfolio category filter. Shows/hides cards by their
- * `data-cats` attribute and reflects the choice in the URL (?category=) via
- * the History API — no navigation, so the page itself stays static/CDN-cached
- * (no serverless hit per filter or prefetch).
+ * Client-side blog category filter. Shows/hides posts by their `data-cat`
+ * attribute and reflects the choice in the URL (?category=) via the History
+ * API — no navigation, so the page stays static/CDN-cached.
  */
-export function PortfolioFilters({ services }: { services: ServiceRow[] }) {
+export function BlogFilters({ categories }: { categories: BlogCategoryRow[] }) {
   const [active, setActive] = useState<string | null>(null);
 
   function apply(cat: string | null) {
-    const grid = document.getElementById("portfolio-grid");
-    if (!grid) return;
+    const root = document.getElementById("blog-list");
+    if (!root) return;
     let shown = 0;
-    grid.querySelectorAll<HTMLElement>("[data-cats]").forEach((el) => {
-      const cats = (el.dataset.cats ?? "").split(" ").filter(Boolean);
-      const match = !cat || cats.includes(cat);
+    root.querySelectorAll<HTMLElement>("[data-cat]").forEach((el) => {
+      const match = !cat || el.dataset.cat === cat;
       el.style.display = match ? "" : "none";
       if (match) shown += 1;
     });
-    const empty = document.getElementById("portfolio-empty");
+    const empty = document.getElementById("blog-empty");
     if (empty) empty.style.display = shown === 0 ? "" : "none";
   }
 
-  // Honor a deep link (?category=) on first load.
   useEffect(() => {
     const cat = new URLSearchParams(window.location.search).get("category");
     setActive(cat);
@@ -37,8 +34,7 @@ export function PortfolioFilters({ services }: { services: ServiceRow[] }) {
   function select(cat: string | null) {
     setActive(cat);
     apply(cat);
-    const url = cat ? `/portfolio?category=${cat}` : "/portfolio";
-    window.history.replaceState(null, "", url);
+    window.history.replaceState(null, "", cat ? `/blog?category=${cat}` : "/blog");
   }
 
   const chip = (isActive: boolean) =>
@@ -51,16 +47,16 @@ export function PortfolioFilters({ services }: { services: ServiceRow[] }) {
       <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
           <button type="button" onClick={() => select(null)} className={chip(!active)}>
-            All work
+            All notes
           </button>
-          {services.map((s) => (
+          {categories.map((c) => (
             <button
-              key={s.id}
+              key={c.id}
               type="button"
-              onClick={() => select(s.slug)}
-              className={chip(active === s.slug)}
+              onClick={() => select(c.slug)}
+              className={chip(active === c.slug)}
             >
-              {s.short_title ?? s.title}
+              {c.name}
             </button>
           ))}
         </div>
