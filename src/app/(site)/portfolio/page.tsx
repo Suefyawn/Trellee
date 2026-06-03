@@ -22,6 +22,11 @@ export default async function PortfolioPage() {
     getServices(),
   ]);
 
+  // Only show filter chips for disciplines that actually have case studies,
+  // so there are no dead-end filters.
+  const usedCats = new Set(projects.flatMap((p) => p.service_categories));
+  const visibleServices = services.filter((s) => usedCats.has(s.slug));
+
   return (
     <>
       <section className="relative pt-16 pb-12 lg:pt-24 lg:pb-16 overflow-hidden">
@@ -43,7 +48,7 @@ export default async function PortfolioPage() {
         </div>
       </section>
 
-      <PortfolioFilters services={services} />
+      <PortfolioFilters services={visibleServices} />
 
       <section className="py-16 lg:py-24">
         <div className="max-w-[1280px] mx-auto px-6 lg:px-10">
@@ -55,34 +60,21 @@ export default async function PortfolioPage() {
             <>
             <div id="portfolio-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {projects.map((p, i) => {
-                const isFeature = i === 0;
                 return (
                   <Link
                     key={p.id}
                     href={`/portfolio/${p.slug}`}
                     data-cats={p.service_categories.join(" ")}
-                    className={`bento-tile p-0 overflow-hidden group flex flex-col min-h-[340px] ${
-                      isFeature
-                        ? "md:col-span-2 lg:col-span-2 lg:row-span-2 lg:min-h-[700px]"
-                        : ""
-                    }`}
+                    className="bento-tile p-0 overflow-hidden group flex flex-col min-h-[340px]"
                   >
-                    <div
-                      className={`relative overflow-hidden border-b border-border bg-surface-2 ${
-                        isFeature ? "flex-1 min-h-[200px]" : "aspect-[16/10]"
-                      }`}
-                    >
+                    <div className="relative overflow-hidden border-b border-border bg-surface-2 aspect-[16/10]">
                       {p.cover_url ? (
                         <Image
                           src={p.cover_url}
                           alt={`${p.title} website`}
                           fill
-                          sizes={
-                            isFeature
-                              ? "(max-width: 1024px) 100vw, 66vw"
-                              : "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                          }
-                          priority={isFeature}
+                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          priority={i < 3}
                           className="object-cover object-top transition duration-500 group-hover:scale-[1.03]"
                         />
                       ) : (
@@ -94,18 +86,14 @@ export default async function PortfolioPage() {
                       )}
                       <ArrowUpRight className="absolute top-4 right-4 w-7 h-7 text-fg bg-bg/50 backdrop-blur rounded-md p-1 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition" />
                     </div>
-                    <div className={`p-7 ${isFeature ? "" : "flex-1 flex flex-col justify-end"}`}>
+                    <div className="p-7 flex-1 flex flex-col">
                     <div className="flex items-start justify-between">
                       <span className="mono-tag">
                         {p.hero_eyebrow ?? "CASE STUDY"}
                       </span>
                     </div>
                     <div>
-                      <h3
-                        className={`font-display ${
-                          isFeature ? "t-heading-xl" : "t-heading-l"
-                        }`}
-                      >
+                      <h3 className="font-display t-heading-l">
                         {p.title}
                       </h3>
                       {p.client_name ? (
@@ -118,7 +106,7 @@ export default async function PortfolioPage() {
                       </p>
                       {p.metrics.length > 0 ? (
                         <div className="flex flex-wrap gap-6 mt-5 pt-5 border-t border-border">
-                          {p.metrics.slice(0, isFeature ? 4 : 2).map((m, idx) => (
+                          {p.metrics.slice(0, 2).map((m, idx) => (
                             <div key={idx}>
                               <div className="font-display text-xl tracking-tight">
                                 {m.value}
