@@ -97,7 +97,7 @@ export default async function PortfolioPage({
                       )}
                       <ArrowUpRight className="absolute top-4 right-4 w-7 h-7 text-fg bg-bg/50 backdrop-blur rounded-md p-1 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition" />
                     </div>
-                    <div className="p-7 flex-1 flex flex-col justify-between">
+                    <div className={`p-7 ${isFeature ? "" : "flex-1 flex flex-col justify-end"}`}>
                     <div className="flex items-start justify-between">
                       <span className="mono-tag">
                         {p.hero_eyebrow ?? "CASE STUDY"}

@@ -23,6 +23,11 @@ export function Reveal({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    // No observer support (or SSR edge cases): show immediately.
+    if (typeof IntersectionObserver === "undefined") {
+      el.classList.add("in");
+      return;
+    }
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -32,10 +37,23 @@ export function Reveal({
           }
         }
       },
-      { threshold: 0.12 },
+      // Reveal as soon as any part enters, and start a bit before the element
+      // scrolls into view, so fast scrolling never leaves blank/dark sections.
+      { threshold: 0, rootMargin: "0px 0px 15% 0px" },
     );
     observer.observe(el);
-    return () => observer.disconnect();
+
+    // Safety net: if for any reason the observer hasn't fired shortly after
+    // mount (e.g. element already on screen), reveal it.
+    const t = setTimeout(() => {
+      const r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight && r.bottom > 0) el.classList.add("in");
+    }, 200);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(t);
+    };
   }, []);
 
   return (
