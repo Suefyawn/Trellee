@@ -5,6 +5,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { runMonitorChecks } from "@/lib/monitor";
 import { sendMonitorAlert } from "@/lib/email";
 import { requireOwner } from "./guard";
+import { actionError } from "@/lib/action-error";
 
 /** Normalize a user-typed URL to an absolute http(s) URL. */
 function normalizeUrl(raw: string): string | null {
@@ -27,7 +28,7 @@ export async function addMonitoredSite(label: string, url: string) {
     label: label.trim() || normalized,
     url: normalized,
   });
-  if (error) return { ok: false as const, error: error.message };
+  if (error) return { ok: false as const, error: actionError(error) };
   revalidatePath("/admin/monitor");
   return { ok: true as const };
 }
@@ -36,7 +37,7 @@ export async function deleteMonitoredSite(id: string) {
   await requireOwner();
   const sb = createSupabaseAdminClient();
   const { error } = await sb.from("monitored_sites").delete().eq("id", id);
-  if (error) return { ok: false as const, error: error.message };
+  if (error) return { ok: false as const, error: actionError(error) };
   revalidatePath("/admin/monitor");
   return { ok: true as const };
 }
@@ -45,7 +46,7 @@ export async function toggleMonitoredSite(id: string, active: boolean) {
   await requireOwner();
   const sb = createSupabaseAdminClient();
   const { error } = await sb.from("monitored_sites").update({ active }).eq("id", id);
-  if (error) return { ok: false as const, error: error.message };
+  if (error) return { ok: false as const, error: actionError(error) };
   revalidatePath("/admin/monitor");
   return { ok: true as const };
 }

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { requireOwner } from "./guard";
+import { actionError } from "@/lib/action-error";
 import type {
   ProjectGalleryItem,
   ProjectMetric,
@@ -61,14 +62,14 @@ export async function upsertProject(input: ProjectInput) {
   let id = input.id;
   if (id) {
     const { error } = await sb.from("projects").update(payload).eq("id", id);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   } else {
     const { data, error } = await sb
       .from("projects")
       .insert(payload)
       .select("id")
       .maybeSingle<{ id: string }>();
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
     id = data?.id;
   }
   revalidatePath("/admin/projects");
@@ -82,7 +83,7 @@ export async function deleteProject(id: string) {
   await requireOwner();
   const sb = createSupabaseAdminClient();
   const { error } = await sb.from("projects").delete().eq("id", id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: actionError(error) };
   revalidatePath("/admin/projects");
   revalidatePath("/portfolio");
   revalidatePath("/");
@@ -98,7 +99,7 @@ export async function reorderProjects(ids: string[]) {
       .from("projects")
       .update({ featured_order: i })
       .eq("id", ids[i]);
-    if (error) return { ok: false as const, error: error.message };
+    if (error) return { ok: false as const, error: actionError(error) };
   }
   revalidatePath("/admin/projects");
   revalidatePath("/portfolio");

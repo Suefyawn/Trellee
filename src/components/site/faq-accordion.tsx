@@ -15,9 +15,11 @@ export function FAQAccordion({ items }: { items: FAQRow[] }) {
           <div key={item.id} className="border-b border-border">
             <button
               type="button"
+              id={`faq-q-${item.id}`}
               onClick={() => setOpen(isOpen ? null : item.id)}
               className="w-full text-left flex items-start justify-between gap-4 py-6 group"
               aria-expanded={isOpen}
+              aria-controls={`faq-a-${item.id}`}
             >
               <span className="t-heading-l font-display group-hover:text-brand-500 transition">
                 {item.question}
@@ -30,6 +32,14 @@ export function FAQAccordion({ items }: { items: FAQRow[] }) {
               />
             </button>
             <div
+              id={`faq-a-${item.id}`}
+              role="region"
+              aria-labelledby={`faq-q-${item.id}`}
+              // `inert` + `aria-hidden` keep the CSS collapse animation while
+              // removing a closed answer from focus order and the a11y tree
+              // (a 0fr grid still leaves the text reachable to AT otherwise).
+              inert={!isOpen}
+              aria-hidden={!isOpen}
               className={cn(
                 "grid transition-all duration-300",
                 isOpen ? "grid-rows-[1fr] pb-6" : "grid-rows-[0fr]",

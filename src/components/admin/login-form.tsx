@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { ArrowRight } from "lucide-react";
 import { loginAction } from "@/app/admin/_actions/auth";
+import { safeNextPath } from "@/lib/utils";
 
 export function LoginForm({ next }: { next?: string }) {
   const router = useRouter();
@@ -17,7 +18,7 @@ export function LoginForm({ next }: { next?: string }) {
     startTransition(async () => {
       const res = await loginAction(fd);
       if (res.ok) {
-        router.push(next ?? "/admin");
+        router.push(safeNextPath(next));
         router.refresh();
       } else {
         setError(res.error);

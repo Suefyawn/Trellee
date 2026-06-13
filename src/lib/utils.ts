@@ -5,6 +5,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Sanitize a post-login `next` redirect target. Only same-origin absolute paths
+ * are allowed — anything else (a full URL, a protocol-relative `//evil.com`, or
+ * a backslash trick browsers treat as a host) falls back to `/admin`. Prevents
+ * the login page from being used as an open redirect.
+ */
+export function safeNextPath(next: string | null | undefined, fallback = "/admin") {
+  if (!next || !next.startsWith("/")) return fallback;
+  if (next.startsWith("//") || next.startsWith("/\\")) return fallback;
+  return next;
+}
+
 export function slugify(input: string) {
   return input
     .toLowerCase()

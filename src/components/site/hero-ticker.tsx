@@ -11,6 +11,11 @@ export function HeroTicker({ words }: { words: string[] }) {
 
   useEffect(() => {
     if (words.length === 0) return;
+    // Respect reduced-motion: hold a single word instead of auto-cycling.
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
     const id = setInterval(
       () => setIndex((i) => (i + 1) % words.length),
       1900,
@@ -31,7 +36,9 @@ export function HeroTicker({ words }: { words: string[] }) {
         height: "1em",
         minWidth: `${longest.length + 1}ch`,
       }}
-      aria-live="polite"
+      // Decorative flourish — the headline carries the meaning. Don't announce
+      // (or re-announce every 1.9s) the rotating word to screen readers.
+      aria-hidden="true"
     >
       <span
         className="ticker-track"

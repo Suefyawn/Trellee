@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { requireOwner } from "./guard";
+import { actionError } from "@/lib/action-error";
 import type { InvoiceLineItem } from "@/lib/types/database";
 
 export type InvoiceInput = {
@@ -70,7 +71,7 @@ export async function upsertInvoice(input: InvoiceInput) {
   let id = input.id;
   if (id) {
     const { error } = await sb.from("invoices").update(payload).eq("id", id);
-    if (error) return { ok: false as const, error: error.message };
+    if (error) return { ok: false as const, error: actionError(error) };
   } else {
     const number = await nextInvoiceNumber(sb);
     const { data, error } = await sb
@@ -78,7 +79,7 @@ export async function upsertInvoice(input: InvoiceInput) {
       .insert({ ...payload, number })
       .select("id")
       .maybeSingle<{ id: string }>();
-    if (error) return { ok: false as const, error: error.message };
+    if (error) return { ok: false as const, error: actionError(error) };
     id = data?.id;
   }
   revalidatePath("/admin/invoices");
@@ -93,7 +94,7 @@ export async function updateInvoiceStatus(
   await requireOwner();
   const sb = createSupabaseAdminClient();
   const { error } = await sb.from("invoices").update({ status }).eq("id", id);
-  if (error) return { ok: false as const, error: error.message };
+  if (error) return { ok: false as const, error: actionError(error) };
   revalidatePath("/admin/invoices");
   revalidatePath(`/admin/invoices/${id}`);
   return { ok: true as const };
@@ -103,7 +104,7 @@ export async function deleteInvoice(id: string) {
   await requireOwner();
   const sb = createSupabaseAdminClient();
   const { error } = await sb.from("invoices").delete().eq("id", id);
-  if (error) return { ok: false as const, error: error.message };
+  if (error) return { ok: false as const, error: actionError(error) };
   revalidatePath("/admin/invoices");
   return { ok: true as const };
 }

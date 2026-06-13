@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { requireOwner } from "./guard";
+import { actionError } from "@/lib/action-error";
 
 export type PricingTierInput = {
   id?: string;
@@ -35,10 +36,10 @@ export async function upsertPricingTier(input: PricingTierInput) {
   };
   if (input.id) {
     const { error } = await sb.from("pricing_tiers").update(payload).eq("id", input.id);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   } else {
     const { error } = await sb.from("pricing_tiers").insert(payload);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   }
   revalidatePath("/admin/services");
   revalidatePath("/services");
@@ -49,7 +50,7 @@ export async function deletePricingTier(id: string) {
   await requireOwner();
   const sb = createSupabaseAdminClient();
   const { error } = await sb.from("pricing_tiers").delete().eq("id", id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: actionError(error) };
   revalidatePath("/admin/services");
   revalidatePath("/services");
   return { ok: true as const };

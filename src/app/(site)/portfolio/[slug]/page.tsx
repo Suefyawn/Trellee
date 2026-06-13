@@ -10,6 +10,7 @@ import {
 import { Reveal } from "@/components/site/reveal";
 import { VideoReview } from "@/components/site/video-review";
 import { JsonLd, breadcrumb } from "@/components/seo/json-ld";
+import { SITE_URL, absoluteUrl } from "@/lib/site";
 
 // Rebuild from the CMS at most every 10 minutes (ISR), so content edits in
 // the admin go live without a manual redeploy.
@@ -61,14 +62,13 @@ export default async function CaseStudyPage({
     {},
   );
 
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://trellee.vercel.app";
+  const siteUrl = SITE_URL;
   const caseStudySchema = {
     "@context": "https://schema.org",
     "@type": "CreativeWork",
     name: project.title,
     ...(project.summary ? { description: project.summary } : {}),
-    ...(project.cover_url ? { image: `${siteUrl}${project.cover_url}` } : {}),
+    ...(project.cover_url ? { image: absoluteUrl(project.cover_url) } : {}),
     ...(project.client_name ? { about: project.client_name } : {}),
     url: `${siteUrl}/portfolio/${slug}`,
     creator: { "@type": "Organization", name: "Trellee", url: siteUrl },

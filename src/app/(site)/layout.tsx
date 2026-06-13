@@ -3,9 +3,7 @@ import { CustomCursor } from "@/components/site/custom-cursor";
 import { JsonLd } from "@/components/seo/json-ld";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteNav } from "@/components/site/site-nav";
-
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://trellee.vercel.app";
+import { SITE_URL } from "@/lib/site";
 
 export default async function SiteLayout({
   children,

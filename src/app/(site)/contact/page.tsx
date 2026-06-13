@@ -4,6 +4,10 @@ import { Reveal } from "@/components/site/reveal";
 import { ContactForm } from "@/components/site/contact-form";
 import { FAQAccordion } from "@/components/site/faq-accordion";
 
+// Contact reads only CMS data (settings/services/FAQs), so it can be ISR-cached
+// like the rest of the site instead of rendering dynamically on every request.
+export const revalidate = 600;
+
 export const metadata = {
   title: "Contact",
   description: "Send a brief or book a call. We read every message.",

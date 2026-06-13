@@ -1,22 +1,15 @@
 import { AdminShell } from "@/components/admin/admin-shell";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-
-function isSupabaseConfigured() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  return !!url && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY && !url.includes("YOUR-PROJECT-REF");
-}
+import { requireOwner } from "@/app/admin/_actions/guard";
 
 export default async function AdminShellLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Middleware enforces auth; this just surfaces the email in the UI.
-  let userEmail: string | null = null;
-  if (isSupabaseConfigured()) {
-    const sb = await createSupabaseServerClient();
-    const { data: { user } } = await sb.auth.getUser();
-    userEmail = user?.email ?? null;
-  }
-  return <AdminShell userEmail={userEmail}>{children}</AdminShell>;
+  // Gate every admin read server-side, not just via middleware. requireOwner
+  // redirects to /admin/login unless the signed-in user is the configured owner
+  // (and handles the not-configured case), so service-role data never renders
+  // without an in-handler authorization check.
+  const user = await requireOwner();
+  return <AdminShell userEmail={user.email ?? null}>{children}</AdminShell>;
 }

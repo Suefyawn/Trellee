@@ -281,7 +281,11 @@ export function BookingFlow({
               <span className="mono-tag mb-3 inline-flex">Pick a day</span>
               <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
                 {dates.map((d) => {
-                  const iso = d.toISOString().slice(0, 10);
+                  // Format in LOCAL time (en-CA → YYYY-MM-DD). Using
+                  // toISOString() here stored the UTC date, which is the
+                  // previous day for users at positive offsets near midnight —
+                  // mismatching the weekday/day-number shown just below.
+                  const iso = d.toLocaleDateString("en-CA");
                   const dayName = d.toLocaleDateString("en-US", {
                     weekday: "short",
                   });
