@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/admin/login-form";
 import { Logo } from "@/components/site/logo";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { safeNextPath } from "@/lib/utils";
 
 export const metadata = { title: "Admin login" };
 
@@ -25,7 +26,7 @@ export default async function AdminLoginPage({
     if (user) {
       const ownerEmail = process.env.ADMIN_OWNER_EMAIL?.toLowerCase();
       if (!ownerEmail || user.email?.toLowerCase() === ownerEmail) {
-        redirect(params.next ?? "/admin");
+        redirect(safeNextPath(params.next));
       }
     }
   }

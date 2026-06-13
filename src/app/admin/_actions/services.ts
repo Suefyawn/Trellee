@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { requireOwner } from "./guard";
+import { actionError } from "@/lib/action-error";
 
 export type ServiceFormInput = {
   id?: string;
@@ -53,14 +54,14 @@ export async function upsertService(input: ServiceFormInput) {
   let id = input.id;
   if (id) {
     const { error } = await sb.from("services").update(payload).eq("id", id);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   } else {
     const { data, error } = await sb
       .from("services")
       .insert(payload)
       .select("id")
       .maybeSingle<{ id: string }>();
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
     id = data?.id;
   }
   revalidatePath("/admin/services");
@@ -79,7 +80,7 @@ export async function reorderServices(ids: string[]) {
       .from("services")
       .update({ display_order: i })
       .eq("id", ids[i]);
-    if (error) return { ok: false as const, error: error.message };
+    if (error) return { ok: false as const, error: actionError(error) };
   }
   revalidatePath("/admin/services");
   revalidatePath("/services");
@@ -91,7 +92,7 @@ export async function deleteService(id: string) {
   await requireOwner();
   const sb = createSupabaseAdminClient();
   const { error } = await sb.from("services").delete().eq("id", id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: actionError(error) };
   revalidatePath("/admin/services");
   revalidatePath("/services");
   revalidatePath("/");

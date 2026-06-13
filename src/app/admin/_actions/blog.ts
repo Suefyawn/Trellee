@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { requireOwner } from "./guard";
+import { actionError } from "@/lib/action-error";
 
 export type BlogPostInput = {
   id?: string;
@@ -45,14 +46,14 @@ export async function upsertBlogPost(input: BlogPostInput) {
   let id = input.id;
   if (id) {
     const { error } = await sb.from("blog_posts").update(payload).eq("id", id);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   } else {
     const { data, error } = await sb
       .from("blog_posts")
       .insert(payload)
       .select("id")
       .maybeSingle<{ id: string }>();
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
     id = data?.id;
   }
   revalidatePath("/admin/blog/posts");
@@ -65,7 +66,7 @@ export async function deleteBlogPost(id: string) {
   await requireOwner();
   const sb = createSupabaseAdminClient();
   const { error } = await sb.from("blog_posts").delete().eq("id", id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: actionError(error) };
   revalidatePath("/admin/blog/posts");
   revalidatePath("/blog");
   return { ok: true as const };
@@ -90,10 +91,10 @@ export async function upsertBlogCategory(input: BlogCategoryInput) {
   };
   if (input.id) {
     const { error } = await sb.from("blog_categories").update(payload).eq("id", input.id);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   } else {
     const { error } = await sb.from("blog_categories").insert(payload);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   }
   revalidatePath("/admin/blog/categories");
   revalidatePath("/blog");
@@ -104,7 +105,7 @@ export async function deleteBlogCategory(id: string) {
   await requireOwner();
   const sb = createSupabaseAdminClient();
   const { error } = await sb.from("blog_categories").delete().eq("id", id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: actionError(error) };
   revalidatePath("/admin/blog/categories");
   revalidatePath("/blog");
   return { ok: true as const };

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { requireOwner } from "./guard";
+import { actionError } from "@/lib/action-error";
 import type { CrmStage } from "@/lib/types/database";
 
 const STAGES: CrmStage[] = [
@@ -30,7 +31,7 @@ export async function updateCrmStage(
     .from(tableFor(source))
     .update({ pipeline_stage: stage, crm_updated_at: new Date().toISOString() })
     .eq("id", id);
-  if (error) return { ok: false as const, error: error.message };
+  if (error) return { ok: false as const, error: actionError(error) };
   revalidatePath("/admin/crm");
   return { ok: true as const };
 }
@@ -58,7 +59,7 @@ export async function updateCrmDeal(
     update.outcome_reason = fields.outcome_reason?.trim() || null;
   }
   const { error } = await sb.from(tableFor(source)).update(update).eq("id", id);
-  if (error) return { ok: false as const, error: error.message };
+  if (error) return { ok: false as const, error: actionError(error) };
   revalidatePath("/admin/crm");
   return { ok: true as const };
 }
@@ -74,7 +75,7 @@ export async function updateCrmNotes(
     .from(tableFor(source))
     .update({ crm_notes: notes.trim() || null, crm_updated_at: new Date().toISOString() })
     .eq("id", id);
-  if (error) return { ok: false as const, error: error.message };
+  if (error) return { ok: false as const, error: actionError(error) };
   revalidatePath("/admin/crm");
   return { ok: true as const };
 }

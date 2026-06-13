@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { requireOwner } from "./guard";
+import { actionError } from "@/lib/action-error";
 import type { SiteSettingsRow } from "@/lib/types/database";
 
 function bumpAll() {
@@ -36,10 +37,10 @@ export async function upsertClient(input: ClientInput) {
   };
   if (input.id) {
     const { error } = await sb.from("clients").update(payload).eq("id", input.id);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   } else {
     const { error } = await sb.from("clients").insert(payload);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   }
   revalidatePath("/admin/clients");
   bumpAll();
@@ -50,7 +51,7 @@ export async function deleteClient(id: string) {
   await requireOwner();
   const sb = createSupabaseAdminClient();
   const { error } = await sb.from("clients").delete().eq("id", id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: actionError(error) };
   revalidatePath("/admin/clients");
   bumpAll();
   return { ok: true as const };
@@ -82,10 +83,10 @@ export async function upsertTeamMember(input: TeamMemberInput) {
   };
   if (input.id) {
     const { error } = await sb.from("team_members").update(payload).eq("id", input.id);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   } else {
     const { error } = await sb.from("team_members").insert(payload);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   }
   revalidatePath("/admin/team");
   revalidatePath("/about");
@@ -96,7 +97,7 @@ export async function deleteTeamMember(id: string) {
   await requireOwner();
   const sb = createSupabaseAdminClient();
   const { error } = await sb.from("team_members").delete().eq("id", id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: actionError(error) };
   revalidatePath("/admin/team");
   revalidatePath("/about");
   return { ok: true as const };
@@ -122,10 +123,10 @@ export async function upsertValue(input: ValueInput) {
   };
   if (input.id) {
     const { error } = await sb.from("values").update(payload).eq("id", input.id);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   } else {
     const { error } = await sb.from("values").insert(payload);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   }
   revalidatePath("/admin/values");
   revalidatePath("/about");
@@ -136,7 +137,7 @@ export async function deleteValue(id: string) {
   await requireOwner();
   const sb = createSupabaseAdminClient();
   const { error } = await sb.from("values").delete().eq("id", id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: actionError(error) };
   revalidatePath("/admin/values");
   revalidatePath("/about");
   return { ok: true as const };
@@ -168,10 +169,10 @@ export async function upsertProcessStep(input: ProcessStepInput) {
   };
   if (input.id) {
     const { error } = await sb.from("process_steps").update(payload).eq("id", input.id);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   } else {
     const { error } = await sb.from("process_steps").insert(payload);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   }
   revalidatePath("/admin/process");
   revalidatePath("/");
@@ -182,7 +183,7 @@ export async function deleteProcessStep(id: string) {
   await requireOwner();
   const sb = createSupabaseAdminClient();
   const { error } = await sb.from("process_steps").delete().eq("id", id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: actionError(error) };
   revalidatePath("/admin/process");
   revalidatePath("/");
   return { ok: true as const };
@@ -208,10 +209,10 @@ export async function upsertActivity(input: ActivityInput) {
   };
   if (input.id) {
     const { error } = await sb.from("activity_feed").update(payload).eq("id", input.id);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   } else {
     const { error } = await sb.from("activity_feed").insert(payload);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   }
   revalidatePath("/admin/activity");
   revalidatePath("/");
@@ -222,7 +223,7 @@ export async function deleteActivity(id: string) {
   await requireOwner();
   const sb = createSupabaseAdminClient();
   const { error } = await sb.from("activity_feed").delete().eq("id", id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: actionError(error) };
   revalidatePath("/admin/activity");
   revalidatePath("/");
   return { ok: true as const };
@@ -246,10 +247,10 @@ export async function upsertSocialLink(input: SocialLinkInput) {
   };
   if (input.id) {
     const { error } = await sb.from("social_links").update(payload).eq("id", input.id);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   } else {
     const { error } = await sb.from("social_links").insert(payload);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   }
   revalidatePath("/admin/social");
   bumpAll();
@@ -260,7 +261,7 @@ export async function deleteSocialLink(id: string) {
   await requireOwner();
   const sb = createSupabaseAdminClient();
   const { error } = await sb.from("social_links").delete().eq("id", id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: actionError(error) };
   revalidatePath("/admin/social");
   bumpAll();
   return { ok: true as const };
@@ -271,7 +272,7 @@ export async function updateSiteSettings(input: Partial<SiteSettingsRow>) {
   await requireOwner();
   const sb = createSupabaseAdminClient();
   const { error } = await sb.from("site_settings").update(input).eq("id", 1);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: actionError(error) };
   revalidatePath("/admin/settings");
   bumpAll();
   return { ok: true as const };

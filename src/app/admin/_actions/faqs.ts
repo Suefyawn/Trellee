@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { requireOwner } from "./guard";
+import { actionError } from "@/lib/action-error";
 
 export type FAQInput = {
   id?: string;
@@ -25,10 +26,10 @@ export async function upsertFAQ(input: FAQInput) {
   };
   if (input.id) {
     const { error } = await sb.from("faqs").update(payload).eq("id", input.id);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   } else {
     const { error } = await sb.from("faqs").insert(payload);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: actionError(error) };
   }
   revalidatePath("/admin/services");
   revalidatePath("/admin/faqs");
@@ -41,7 +42,7 @@ export async function deleteFAQ(id: string) {
   await requireOwner();
   const sb = createSupabaseAdminClient();
   const { error } = await sb.from("faqs").delete().eq("id", id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: actionError(error) };
   revalidatePath("/admin/services");
   revalidatePath("/admin/faqs");
   revalidatePath("/services");
