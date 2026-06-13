@@ -45,6 +45,9 @@ export function ReviewsCarousel({ reviews }: { reviews: ReviewRow[] }) {
 
       <div
         ref={trackRef}
+        role="region"
+        aria-label="Client testimonials"
+        tabIndex={0}
         className="flex gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory -mx-6 px-6 lg:mx-0 lg:px-0 pb-1"
       >
         {reviews.map((r) => (
