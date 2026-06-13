@@ -1,5 +1,6 @@
 "use server";
 
+import { spamReason } from "@/lib/anti-spam";
 import { sendBookingEmails } from "@/lib/email";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { validateBooking } from "@/lib/validation";
@@ -13,6 +14,10 @@ export type BookingInput = {
   company?: string;
   phone?: string;
   notes?: string;
+  /** Anti-spam honeypot — a hidden field; empty for real humans. */
+  hp?: string;
+  /** Anti-spam — ms the form was on screen before submit. */
+  elapsedMs?: number;
 };
 
 export type BookingResult =
@@ -20,6 +25,16 @@ export type BookingResult =
   | { ok: false; error: string };
 
 export async function submitBooking(input: BookingInput): Promise<BookingResult> {
+  // Silently drop spam (success to the caller, but no DB write / email).
+  const spam = spamReason(
+    { hp: input.hp, elapsedMs: input.elapsedMs, texts: [input.notes] },
+    { minFillMs: 2500 },
+  );
+  if (spam) {
+    console.info("[booking] dropped spam:", spam);
+    return { ok: true, id: null };
+  }
+
   const validationError = validateBooking(input);
   if (validationError) return { ok: false, error: validationError };
 

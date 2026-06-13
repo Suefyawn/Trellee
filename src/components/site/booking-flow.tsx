@@ -8,6 +8,7 @@ import { submitBooking } from "@/app/actions/booking";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import { ServiceIcon } from "./service-icon";
+import { Honeypot, useFormGuard } from "./form-guard";
 
 type Step = "service" | "time" | "details" | "confirm";
 
@@ -57,6 +58,7 @@ export function BookingFlow({
   const [done, setDone] = useState<{ id: string | null } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const guard = useFormGuard();
 
   const stepIdx = STEPS.findIndex((s) => s.key === step);
   const dates = useMemo(() => nextWeekdays(8), []);
@@ -99,6 +101,8 @@ export function BookingFlow({
         company: details.company || undefined,
         phone: details.phone || undefined,
         notes: details.notes || undefined,
+        hp: guard.hp,
+        elapsedMs: guard.elapsedMs(),
       });
       if (res.ok) {
         track("booking_submitted", { service: serviceSlug ?? "unsure" });
@@ -344,7 +348,8 @@ export function BookingFlow({
             <p className="t-body text-muted mt-2">
               Just the basics. We won&apos;t harass you with sequences.
             </p>
-            <div className="grid sm:grid-cols-2 gap-4 mt-8">
+            <div className="relative grid sm:grid-cols-2 gap-4 mt-8">
+              <Honeypot {...guard.honeypotProps} />
               <label className="block">
                 <span className="t-mono text-muted text-xs">Name</span>
                 <input

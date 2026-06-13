@@ -1,14 +1,29 @@
 "use server";
 
+import { spamReason } from "@/lib/anti-spam";
 import { notifyNewsletterSignup } from "@/lib/email";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 
 export type NewsletterResult = { ok: true } | { ok: false; error: string };
 
+/** Anti-spam signals carried alongside the email. */
+export type NewsletterMeta = { hp?: string; elapsedMs?: number };
+
 export async function subscribeNewsletter(
   email: string,
   source = "blog",
+  meta: NewsletterMeta = {},
 ): Promise<NewsletterResult> {
+  // Silently drop spam (a single email field, so allow a quicker human fill).
+  const spam = spamReason(
+    { hp: meta.hp, elapsedMs: meta.elapsedMs },
+    { minFillMs: 1000 },
+  );
+  if (spam) {
+    console.info("[newsletter] dropped spam:", spam);
+    return { ok: true };
+  }
+
   const e = (email ?? "").trim().toLowerCase();
   if (!/^\S+@\S+\.\S+$/.test(e)) {
     return { ok: false, error: "Enter a valid email address." };
