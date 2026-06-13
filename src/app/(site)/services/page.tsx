@@ -4,6 +4,7 @@ import { getServices } from "@/lib/cms";
 import { Reveal } from "@/components/site/reveal";
 import { ServiceIcon } from "@/components/site/service-icon";
 import { JsonLd } from "@/components/seo/json-ld";
+import { SITE_URL } from "@/lib/site";
 
 // Rebuild from the CMS at most every 10 minutes (ISR), so content edits in
 // the admin go live without a manual redeploy.
@@ -27,7 +28,7 @@ export default async function ServicesPage() {
   }, {});
   const categories = Object.keys(grouped);
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://trellee.com";
+  const siteUrl = SITE_URL;
   const itemList = {
     "@context": "https://schema.org",
     "@type": "ItemList",

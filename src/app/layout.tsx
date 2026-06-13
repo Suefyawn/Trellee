@@ -2,8 +2,9 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { PostHogProvider } from "@/components/analytics/posthog-provider";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { SITE_URL } from "@/lib/site";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const siteUrl = SITE_URL;
 const siteName = "Trellee";
 const description =
   "Trellee is a full-stack digital agency. We design brands, ship code, run ads, and build the systems your business runs on, all from one team.";

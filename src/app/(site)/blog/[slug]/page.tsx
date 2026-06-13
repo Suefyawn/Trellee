@@ -12,6 +12,7 @@ import { Reveal } from "@/components/site/reveal";
 import { Markdown } from "@/components/site/markdown";
 import { ShareRow } from "@/components/site/share-row";
 import { JsonLd, breadcrumb } from "@/components/seo/json-ld";
+import { SITE_URL, absoluteUrl } from "@/lib/site";
 import { formatDate } from "@/lib/utils";
 
 // Rebuild from the CMS at most every 10 minutes (ISR), so content edits in
@@ -61,8 +62,7 @@ export default async function BlogPostPage({
   const newer = idx > 0 ? allPosts[idx - 1] : null;
   const older = idx >= 0 && idx < allPosts.length - 1 ? allPosts[idx + 1] : null;
 
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://trellee.vercel.app";
+  const siteUrl = SITE_URL;
   const postUrl = `${siteUrl}/blog/${slug}`;
 
   const articleSchema = {
@@ -70,7 +70,7 @@ export default async function BlogPostPage({
     "@type": "BlogPosting",
     headline: post.title,
     ...(post.excerpt ? { description: post.excerpt } : {}),
-    ...(post.cover_url ? { image: `${siteUrl}${post.cover_url}` } : {}),
+    ...(post.cover_url ? { image: absoluteUrl(post.cover_url) } : {}),
     ...(post.published_at ? { datePublished: post.published_at } : {}),
     dateModified: post.updated_at ?? post.published_at ?? undefined,
     ...(author ? { author: { "@type": "Person", name: author.name } } : {}),
