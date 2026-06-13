@@ -28,7 +28,9 @@ export async function GET(req: NextRequest) {
   const res = NextResponse.redirect(buildGoogleAuthUrl(redirectUri, state));
   res.cookies.set("g_oauth_state", state, {
     httpOnly: true,
-    secure: true,
+    // Secure in production; allow http://localhost so the OAuth state cookie
+    // round-trips during local development (it wouldn't be sent over plain http).
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/admin",
     maxAge: 600,
