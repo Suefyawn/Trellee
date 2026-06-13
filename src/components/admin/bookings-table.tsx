@@ -15,6 +15,7 @@ const STATUSES: BookingRow["status"][] = [
   "won",
   "lost",
   "cancelled",
+  "spam",
 ];
 
 export function BookingsTable({ initial }: { initial: BookingRow[] }) {
@@ -27,7 +28,8 @@ export function BookingsTable({ initial }: { initial: BookingRow[] }) {
   const q = query.trim().toLowerCase();
   const filtered = initial.filter(
     (b) =>
-      (filter === "all" || b.status === filter) &&
+      // "all" hides quarantined spam — still reviewable under the Spam tab.
+      (filter === "all" ? b.status !== "spam" : b.status === filter) &&
       (!q ||
         `${b.name} ${b.email} ${b.company ?? ""}`.toLowerCase().includes(q)),
   );
@@ -148,7 +150,7 @@ function FragmentRow({
             className="select py-1 px-2 text-xs"
           >
             {(
-              ["new", "contacted", "scheduled", "won", "lost", "cancelled"] as const
+              ["new", "contacted", "scheduled", "won", "lost", "cancelled", "spam"] as const
             ).map((s) => (
               <option key={s} value={s}>
                 {s}

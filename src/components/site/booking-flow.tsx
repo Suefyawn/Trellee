@@ -9,6 +9,7 @@ import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import { ServiceIcon } from "./service-icon";
 import { Honeypot, useFormGuard } from "./form-guard";
+import { TurnstileWidget } from "./turnstile-widget";
 
 type Step = "service" | "time" | "details" | "confirm";
 
@@ -59,6 +60,7 @@ export function BookingFlow({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const guard = useFormGuard();
+  const [tsToken, setTsToken] = useState<string | null>(null);
 
   const stepIdx = STEPS.findIndex((s) => s.key === step);
   const dates = useMemo(() => nextWeekdays(8), []);
@@ -103,6 +105,7 @@ export function BookingFlow({
         notes: details.notes || undefined,
         hp: guard.hp,
         elapsedMs: guard.elapsedMs(),
+        turnstileToken: tsToken ?? undefined,
       });
       if (res.ok) {
         track("booking_submitted", { service: serviceSlug ?? "unsure" });
@@ -418,6 +421,8 @@ export function BookingFlow({
             {error ? (
               <p className="t-small text-danger mt-4">{error}</p>
             ) : null}
+
+            <TurnstileWidget onToken={setTsToken} />
 
             <div className="surface-card mt-6 p-4 flex items-center gap-3 t-small text-muted bg-surface-2/50">
               <Calendar className="w-4 h-4 text-brand-500" />

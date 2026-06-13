@@ -221,7 +221,7 @@ export type BookingRow = {
   company: string | null;
   phone: string | null;
   notes: string | null;
-  status: "new" | "contacted" | "scheduled" | "won" | "lost" | "cancelled";
+  status: "new" | "contacted" | "scheduled" | "won" | "lost" | "cancelled" | "spam";
   pipeline_stage: CrmStage;
   crm_notes: string | null;
   deal_value: number | null;
@@ -377,6 +377,7 @@ export type NewsletterSubscriberRow = {
   id: string;
   email: string;
   source: string | null;
+  status: "active" | "spam";
   created_at: string;
 };
 
