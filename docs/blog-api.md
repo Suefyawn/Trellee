@@ -40,7 +40,9 @@ Body (JSON):
 | `status`          | `"published"` \| `"draft"` | defaults to `"published"` |
 | `published_at`    | ISO string      | defaults to now when publishing |
 | `excerpt`         | string          | short summary |
-| `cover_url`       | string (URL)    | absolute image URL |
+| `cover_image_url` | string (URL)    | a generated/remote image to **re-host** into Supabase Storage (use this for Hugging Face output — the result is a CSP-allowed `*.supabase.co` URL) |
+| `cover_image_base64` | string       | same, but inline base64 (`data:` prefix optional). Takes priority over `cover_image_url` |
+| `cover_url`       | string (URL)    | direct cover URL — only if already on a CSP-allowed host (`*.supabase.co`, `images.unsplash.com`) |
 | `category`        | string          | by name or slug — **created automatically** if it doesn't exist |
 | `author`          | string          | matched to a team member by name (optional) |
 | `reading_time`    | number          | minutes — auto-estimated from `body` if omitted |
@@ -70,16 +72,20 @@ curl -X POST https://trellee.com/api/admin/blog \
   }'
 ```
 
-## `GET /api/admin/blog` — list
+## `GET /api/admin/blog` — list (+ internal-link targets)
 
-Returns the 50 most recent posts and the available categories (handy for an
-agent to avoid duplicate slugs and to see valid category names):
+Returns recent posts, categories, and the site's **services + portfolio**
+slugs — so a caller can avoid duplicate slugs and build healthy *internal*
+links to real pages (`/services/<slug>`, `/portfolio/<slug>`, `/blog/<slug>`):
 
 ```json
 {
   "ok": true,
   "posts": [{ "id": "…", "slug": "…", "title": "…", "status": "published", "published_at": "…", "category_id": "…" }],
-  "categories": [{ "slug": "insights", "name": "Insights" }]
+  "categories": [{ "slug": "insights", "name": "Insights" }],
+  "services": [{ "slug": "web-development", "title": "Web Development" }],
+  "projects": [{ "slug": "jewel-city-mattress", "title": "Jewel City Mattress" }],
+  "site_url": "https://trellee.com"
 }
 ```
 
