@@ -6,6 +6,7 @@ import type { ServiceRow } from "@/lib/types/database";
 import { submitContact } from "@/app/actions/contact";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
+import { Honeypot, useFormGuard } from "./form-guard";
 
 const BUDGETS = ["< $10k", "$10k-25k", "$25k-50k", "$50k-100k", "$100k+", "Not sure"];
 
@@ -21,6 +22,7 @@ export function ContactForm({ services }: { services: ServiceRow[] }) {
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const [pending, startTransition] = useTransition();
+  const guard = useFormGuard();
 
   function toggleService(slug: string) {
     setPicked((arr) =>
@@ -39,6 +41,8 @@ export function ContactForm({ services }: { services: ServiceRow[] }) {
         budget: form.budget || undefined,
         services: picked,
         message: form.message,
+        hp: guard.hp,
+        elapsedMs: guard.elapsedMs(),
       });
       if (res.ok) {
         track("contact_submitted", {
@@ -68,7 +72,8 @@ export function ContactForm({ services }: { services: ServiceRow[] }) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-5">
+    <form onSubmit={submit} className="relative space-y-5">
+      <Honeypot {...guard.honeypotProps} />
       <div className="grid sm:grid-cols-2 gap-4">
         <label className="block">
           <span className="t-mono text-muted text-xs">Name</span>

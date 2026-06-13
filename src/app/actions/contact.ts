@@ -1,5 +1,6 @@
 "use server";
 
+import { spamReason } from "@/lib/anti-spam";
 import { sendContactEmails } from "@/lib/email";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { validateContact } from "@/lib/validation";
@@ -12,6 +13,10 @@ export type ContactInput = {
   services?: string[];
   message: string;
   source?: string;
+  /** Anti-spam honeypot — a hidden field; empty for real humans. */
+  hp?: string;
+  /** Anti-spam — ms the form was on screen before submit. */
+  elapsedMs?: number;
 };
 
 export type ContactResult =
@@ -19,6 +24,17 @@ export type ContactResult =
   | { ok: false; error: string };
 
 export async function submitContact(input: ContactInput): Promise<ContactResult> {
+  // Drop spam silently: report success to the caller but never touch the DB or
+  // send email, so bots can't tell they were filtered (and won't adapt).
+  const spam = spamReason(
+    { hp: input.hp, elapsedMs: input.elapsedMs, texts: [input.message] },
+    { minFillMs: 2500 },
+  );
+  if (spam) {
+    console.info("[contact] dropped spam:", spam);
+    return { ok: true, id: null };
+  }
+
   const validationError = validateContact(input);
   if (validationError) return { ok: false, error: validationError };
 

@@ -4,18 +4,23 @@ import { useState, useTransition } from "react";
 import { ArrowUpRight, Check } from "lucide-react";
 import { subscribeNewsletter } from "@/app/actions/newsletter";
 import { track } from "@/lib/analytics";
+import { Honeypot, useFormGuard } from "./form-guard";
 
 export function NewsletterForm({ source = "blog" }: { source?: string }) {
   const [email, setEmail] = useState("");
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const guard = useFormGuard();
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     startTransition(async () => {
-      const res = await subscribeNewsletter(email, source);
+      const res = await subscribeNewsletter(email, source, {
+        hp: guard.hp,
+        elapsedMs: guard.elapsedMs(),
+      });
       if (res.ok) {
         track("newsletter_subscribed", { source });
         setDone(true);
@@ -32,7 +37,8 @@ export function NewsletterForm({ source = "blog" }: { source?: string }) {
   }
 
   return (
-    <form onSubmit={submit} className="mt-8 max-w-md mx-auto">
+    <form onSubmit={submit} className="relative mt-8 max-w-md mx-auto">
+      <Honeypot {...guard.honeypotProps} />
       <div className="flex flex-col sm:flex-row gap-2">
         <input
           type="email"
