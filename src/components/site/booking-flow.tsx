@@ -61,6 +61,10 @@ export function BookingFlow({
   const [pending, startTransition] = useTransition();
   const guard = useFormGuard();
   const [tsToken, setTsToken] = useState<string | null>(null);
+  // Hold submission until the Turnstile token is ready (when the gate is on), so
+  // a fast real user is never quarantined for clicking before it resolves.
+  const needsTurnstile = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const awaitingTurnstile = needsTurnstile && !tsToken;
 
   const stepIdx = STEPS.findIndex((s) => s.key === step);
   const dates = useMemo(() => nextWeekdays(8), []);
@@ -454,10 +458,14 @@ export function BookingFlow({
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={!canAdvance() || pending}
+            disabled={!canAdvance() || pending || awaitingTurnstile}
             className="btn btn-primary disabled:opacity-50"
           >
-            {pending ? "Submitting…" : "Confirm booking"}{" "}
+            {pending
+              ? "Submitting…"
+              : awaitingTurnstile
+                ? "Verifying…"
+                : "Confirm booking"}{" "}
             <ArrowRight className="w-4 h-4" />
           </button>
         ) : (
