@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import {
   getSiteSettings,
@@ -219,13 +220,14 @@ export default async function AboutPage() {
             >
               {team.map((t) => (
                 <Reveal key={t.id} className="surface-card p-7">
-                  <div className="aspect-square rounded-lg bg-gradient-to-br from-surface-2 to-bg mb-5 flex items-center justify-center overflow-hidden">
+                  <div className="relative aspect-square rounded-lg bg-gradient-to-br from-surface-2 to-bg mb-5 flex items-center justify-center overflow-hidden">
                     {t.avatar_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={t.avatar_url}
                         alt={t.name}
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        className="object-cover"
                       />
                     ) : (
                       <span className="font-display text-4xl text-muted">

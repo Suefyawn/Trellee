@@ -163,10 +163,17 @@ export default async function CaseStudyPage({
                   className="surface-card overflow-hidden"
                 >
                   {item.url ? (
+                    /* Gallery items have no stored dimensions and keep their
+                       natural aspect ratio, so this stays a plain <img> (not
+                       next/image, which would force a fixed aspect/crop). Lazy +
+                       async decode keeps below-the-fold images off the critical
+                       path. */
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={item.url}
                       alt={item.caption ?? `${project.title} image ${i + 1}`}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-auto"
                     />
                   ) : (
