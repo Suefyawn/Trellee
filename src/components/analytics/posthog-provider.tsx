@@ -32,6 +32,19 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
         capture_pageview: false, // handled manually below
         capture_pageleave: true,
         person_profiles: "identified_only",
+        // Never capture the admin panel — it's internal usage, and autocapture
+        // would otherwise record interactions with invoice/lead/CRM forms.
+        // Dropping every event whose URL is under /admin covers pageviews,
+        // autocapture, rageclicks, and pageleave in one place.
+        before_send: (event) => {
+          if (
+            typeof window !== "undefined" &&
+            window.location.pathname.startsWith("/admin")
+          ) {
+            return null;
+          }
+          return event;
+        },
       });
       setClient(posthog);
     });
@@ -58,6 +71,7 @@ function PageviewTracker({ client }: { client: PostHog }) {
 
   useEffect(() => {
     if (!pathname) return;
+    if (pathname.startsWith("/admin")) return; // never track the admin panel
     let url = window.origin + pathname;
     const qs = searchParams?.toString();
     if (qs) url += `?${qs}`;
