@@ -25,6 +25,10 @@ export function ContactForm({ services }: { services: ServiceRow[] }) {
   const [pending, startTransition] = useTransition();
   const guard = useFormGuard();
   const [tsToken, setTsToken] = useState<string | null>(null);
+  // When the Turnstile gate is on, hold submission until the token is ready, so
+  // a fast real user is never quarantined for clicking before it resolves.
+  const needsTurnstile = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const awaitingTurnstile = needsTurnstile && !tsToken;
 
   function toggleService(slug: string) {
     setPicked((arr) =>
@@ -177,11 +181,15 @@ export function ContactForm({ services }: { services: ServiceRow[] }) {
         </p>
         <button
           type="submit"
-          disabled={pending}
+          disabled={pending || awaitingTurnstile}
           className="btn btn-primary btn-magnetic disabled:opacity-60 w-full sm:w-auto justify-center"
         >
           <span className="flex items-center gap-2">
-            {pending ? "Sending…" : "Send the brief"}
+            {pending
+              ? "Sending…"
+              : awaitingTurnstile
+                ? "Verifying…"
+                : "Send the brief"}
             <ArrowRight className="w-4 h-4" />
           </span>
         </button>
