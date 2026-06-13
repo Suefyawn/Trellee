@@ -19,7 +19,13 @@ export async function verifyTurnstile(
 ): Promise<boolean> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
   if (!secret) return true; // gate disabled — no keys configured
-  if (!token) return false; // gate on, but no token → bot
+  if (!token) {
+    // The browser didn't produce a token — widget didn't render/solve (domain
+    // not allowlisted, interactive challenge not completed, or submitted before
+    // it resolved).
+    console.warn("[turnstile] no token in submission");
+    return false;
+  }
 
   try {
     const res = await fetch(VERIFY_URL, {
@@ -27,7 +33,19 @@ export async function verifyTurnstile(
       headers: { "content-type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ secret, response: token }),
     });
-    const data = (await res.json()) as { success?: boolean };
+    const data = (await res.json()) as {
+      success?: boolean;
+      "error-codes"?: string[];
+    };
+    if (data.success !== true) {
+      // Cloudflare's error-codes pinpoint the misconfig: invalid-input-secret
+      // (wrong/mismatched secret), invalid-input-response (bad/foreign token),
+      // timeout-or-duplicate (token reused/expired), etc.
+      console.warn(
+        "[turnstile] verify rejected, error-codes:",
+        JSON.stringify(data["error-codes"] ?? []),
+      );
+    }
     return data.success === true;
   } catch (err) {
     // Fail open on infrastructure errors so a Cloudflare outage never costs a
