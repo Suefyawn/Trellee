@@ -14,20 +14,21 @@ export async function subscribeNewsletter(
   source = "blog",
   meta: NewsletterMeta = {},
 ): Promise<NewsletterResult> {
-  // Silently drop spam (a single email field, so allow a quicker human fill).
-  const spam = spamReason(
+  // Quarantine, never drop. A single email field, so a quicker human fill is
+  // fine. (No Turnstile widget here — newsletter isn't a spam target and it'd be
+  // overkill on one field; heuristics + quarantine cover it.)
+  const isSpam = !!spamReason(
     { hp: meta.hp, elapsedMs: meta.elapsedMs },
     { minFillMs: 1000 },
   );
-  if (spam) {
-    console.info("[newsletter] dropped spam:", spam);
-    return { ok: true };
-  }
+  const status = isSpam ? "spam" : "active";
+  if (isSpam) console.info("[newsletter] quarantined signup");
 
   const e = (email ?? "").trim().toLowerCase();
-  if (!/^\S+@\S+\.\S+$/.test(e)) {
+  if (!isSpam && !/^\S+@\S+\.\S+$/.test(e)) {
     return { ok: false, error: "Enter a valid email address." };
   }
+  if (!e) return { ok: true }; // nothing to store
 
   const supabaseConfigured =
     !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
@@ -40,17 +41,20 @@ export async function subscribeNewsletter(
       // Idempotent: a repeat signup is a no-op, not an error.
       const { error } = await sb
         .from("newsletter_subscribers")
-        .upsert({ email: e, source }, { onConflict: "email", ignoreDuplicates: true });
+        .upsert(
+          { email: e, source, status },
+          { onConflict: "email", ignoreDuplicates: true },
+        );
       if (error) {
         console.error("[newsletter] insert error", error);
         return { ok: false, error: "Could not subscribe. Please try again." };
       }
     } else {
-      console.info("[newsletter] (no-supabase) received:", e);
+      console.info("[newsletter] (no-supabase) received:", e, { isSpam });
     }
 
-    // Best-effort: add to Resend audience + notify owner.
-    await notifyNewsletterSignup(e, source);
+    // Notify only real signups; spam never reaches the inbox/audience.
+    if (!isSpam) await notifyNewsletterSignup(e, source);
     return { ok: true };
   } catch (err) {
     console.error("[newsletter] threw", err);

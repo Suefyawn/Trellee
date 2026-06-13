@@ -7,6 +7,7 @@ import { submitContact } from "@/app/actions/contact";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import { Honeypot, useFormGuard } from "./form-guard";
+import { TurnstileWidget } from "./turnstile-widget";
 
 const BUDGETS = ["< $10k", "$10k-25k", "$25k-50k", "$50k-100k", "$100k+", "Not sure"];
 
@@ -23,6 +24,7 @@ export function ContactForm({ services }: { services: ServiceRow[] }) {
   const [sent, setSent] = useState(false);
   const [pending, startTransition] = useTransition();
   const guard = useFormGuard();
+  const [tsToken, setTsToken] = useState<string | null>(null);
 
   function toggleService(slug: string) {
     setPicked((arr) =>
@@ -43,6 +45,7 @@ export function ContactForm({ services }: { services: ServiceRow[] }) {
         message: form.message,
         hp: guard.hp,
         elapsedMs: guard.elapsedMs(),
+        turnstileToken: tsToken ?? undefined,
       });
       if (res.ok) {
         track("contact_submitted", {
@@ -165,6 +168,8 @@ export function ContactForm({ services }: { services: ServiceRow[] }) {
       </label>
 
       {error ? <p className="t-small text-danger">{error}</p> : null}
+
+      <TurnstileWidget onToken={setTsToken} />
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
         <p className="t-small text-muted max-w-md">

@@ -23,7 +23,8 @@ export function LeadsTable({ initial }: { initial: ContactSubmissionRow[] }) {
   const q = query.trim().toLowerCase();
   const filtered = initial.filter(
     (b) =>
-      (filter === "all" || b.status === filter) &&
+      // "all" hides quarantined spam — still reviewable under the Spam tab.
+      (filter === "all" ? b.status !== "spam" : b.status === filter) &&
       (!q ||
         `${b.name} ${b.email} ${b.company ?? ""}`.toLowerCase().includes(q)),
   );

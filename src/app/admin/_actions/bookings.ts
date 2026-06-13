@@ -11,7 +11,8 @@ export type BookingStatus =
   | "scheduled"
   | "won"
   | "lost"
-  | "cancelled";
+  | "cancelled"
+  | "spam";
 
 export async function updateBookingStatus(id: string, status: BookingStatus) {
   await requireOwner();
