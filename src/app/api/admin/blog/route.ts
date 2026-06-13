@@ -3,6 +3,7 @@ import { timingSafeEqual } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/utils";
+import { validateUpload } from "@/lib/upload-validation";
 import { SITE_URL } from "@/lib/site";
 
 /**
@@ -51,16 +52,34 @@ export async function GET(req: Request) {
   if (!auth.ok) return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
 
   const sb = createSupabaseAdminClient();
-  const [{ data: posts }, { data: categories }] = await Promise.all([
-    sb
-      .from("blog_posts")
-      .select("id, slug, title, status, published_at, category_id")
-      .order("created_at", { ascending: false })
-      .limit(50),
-    sb.from("blog_categories").select("slug, name").order("display_order"),
-  ]);
+  // Also return services + portfolio slugs so a caller can build healthy
+  // *internal* links to real pages (/services/<slug>, /portfolio/<slug>,
+  // /blog/<slug>) without guessing.
+  const [{ data: posts }, { data: categories }, { data: services }, { data: projects }] =
+    await Promise.all([
+      sb
+        .from("blog_posts")
+        .select("id, slug, title, status, published_at, category_id")
+        .order("created_at", { ascending: false })
+        .limit(50),
+      sb.from("blog_categories").select("slug, name").order("display_order"),
+      sb.from("services").select("slug, title"),
+      sb
+        .from("projects")
+        .select("slug, title")
+        .eq("status", "published")
+        .order("created_at", { ascending: false })
+        .limit(50),
+    ]);
 
-  return NextResponse.json({ ok: true, posts: posts ?? [], categories: categories ?? [] });
+  return NextResponse.json({
+    ok: true,
+    posts: posts ?? [],
+    categories: categories ?? [],
+    services: services ?? [],
+    projects: projects ?? [],
+    site_url: SITE_URL,
+  });
 }
 
 export async function POST(req: Request) {
@@ -88,6 +107,44 @@ export async function POST(req: Request) {
   const status = body.status === "draft" ? "draft" : "published";
 
   const sb = createSupabaseAdminClient();
+
+  // Featured image. A generated image (e.g. from Hugging Face) lives on a host
+  // the site's CSP blocks, so re-host it into Supabase Storage and use the
+  // resulting *.supabase.co URL (allowed by img-src). Accept it as base64
+  // (`cover_image_base64`) or a URL to fetch (`cover_image_url`); fall back to a
+  // direct `cover_url` (must already be a CSP-allowed host).
+  let cover_url: string | null = str(body.cover_url) || null;
+  const coverB64 = str(body.cover_image_base64);
+  const coverImgUrl = str(body.cover_image_url);
+  if (coverB64 || coverImgUrl) {
+    try {
+      let bytes: Buffer;
+      if (coverB64) {
+        bytes = Buffer.from(coverB64.replace(/^data:[^;]+;base64,/, ""), "base64");
+      } else {
+        const r = await fetch(coverImgUrl);
+        if (!r.ok) throw new Error(`fetch returned ${r.status}`);
+        bytes = Buffer.from(await r.arrayBuffer());
+      }
+      const v = validateUpload("media", bytes);
+      if (!v.ok) {
+        return NextResponse.json({ ok: false, error: `cover image: ${v.error}` }, { status: 400 });
+      }
+      const ext = v.contentType.split("/")[1] ?? "png";
+      const path = `blog/${Date.now()}-${slug}.${ext}`;
+      const { error: upErr } = await sb.storage
+        .from("media")
+        .upload(path, bytes, { contentType: v.contentType, upsert: true });
+      if (upErr) {
+        console.error("[blog-api] cover upload error", upErr);
+        return NextResponse.json({ ok: false, error: "Could not store cover image." }, { status: 500 });
+      }
+      cover_url = sb.storage.from("media").getPublicUrl(path).data.publicUrl;
+    } catch (err) {
+      console.error("[blog-api] cover fetch/decode error", err);
+      return NextResponse.json({ ok: false, error: "Could not process the cover image." }, { status: 400 });
+    }
+  }
 
   // Resolve category by slug or name; auto-create it if it doesn't exist yet so
   // the caller never has to manage categories out of band.
@@ -135,7 +192,7 @@ export async function POST(req: Request) {
     title,
     excerpt: str(body.excerpt) || null,
     body: markdown || null,
-    cover_url: str(body.cover_url) || null,
+    cover_url,
     category_id,
     author_id,
     reading_time:
