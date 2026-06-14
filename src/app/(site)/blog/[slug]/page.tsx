@@ -77,7 +77,12 @@ export default async function BlogPostPage({
     publisher: {
       "@type": "Organization",
       name: "Trellee",
-      logo: { "@type": "ImageObject", url: `${siteUrl}/brand/trellee-logo.png` },
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/brand/trellee-logo.png`,
+        width: 512,
+        height: 512,
+      },
     },
     mainEntityOfPage: postUrl,
   };

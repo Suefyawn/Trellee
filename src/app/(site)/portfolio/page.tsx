@@ -4,16 +4,22 @@ import { ArrowUpRight } from "lucide-react";
 import { getProjects, getServices } from "@/lib/cms";
 import { Reveal } from "@/components/site/reveal";
 import { PortfolioFilters } from "@/components/site/portfolio-filters";
+import { JsonLd, breadcrumb } from "@/components/seo/json-ld";
+import { SITE_URL } from "@/lib/site";
 
 // Rebuild from the CMS at most every 10 minutes (ISR), so content edits in
 // the admin go live without a manual redeploy.
 export const revalidate = 600;
 
+const description =
+  "Recent ships. Filter by discipline: design, dev, mobile, CRMs, AI, growth.";
+
 export const metadata = {
   title: "Work",
-  description:
-    "Recent ships. Filter by discipline: design, dev, mobile, CRMs, AI, growth.",
+  description,
   alternates: { canonical: "/portfolio" },
+  openGraph: { title: "Work · Trellee", description, url: "/portfolio" },
+  twitter: { title: "Work · Trellee", description },
 };
 
 export default async function PortfolioPage() {
@@ -27,8 +33,14 @@ export default async function PortfolioPage() {
   const usedCats = new Set(projects.flatMap((p) => p.service_categories));
   const visibleServices = services.filter((s) => usedCats.has(s.slug));
 
+  const crumbs = breadcrumb(SITE_URL, [
+    { name: "Home", path: "/" },
+    { name: "Work", path: "/portfolio" },
+  ]);
+
   return (
     <>
+      <JsonLd data={crumbs} />
       <section className="relative pt-16 pb-12 lg:pt-24 lg:pb-16 overflow-hidden">
         <div className="mesh" />
         <div className="relative max-w-[1280px] mx-auto px-6 lg:px-10">

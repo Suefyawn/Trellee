@@ -9,10 +9,14 @@ import {
 import { Reveal } from "@/components/site/reveal";
 import { ServiceIcon } from "@/components/site/service-icon";
 
+const description = "Who we are, why we built Trellee, and how we work.";
+
 export const metadata = {
   title: "About",
-  description: "Who we are, why we built Trellee, and how we work.",
+  description,
   alternates: { canonical: "/about" },
+  openGraph: { title: "About Trellee", description, url: "/about" },
+  twitter: { title: "About Trellee", description },
 };
 
 export default async function AboutPage() {

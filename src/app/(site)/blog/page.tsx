@@ -10,16 +10,22 @@ import { Reveal } from "@/components/site/reveal";
 import { PostCover } from "@/components/site/post-cover";
 import { NewsletterForm } from "@/components/site/newsletter-form";
 import { BlogFilters } from "@/components/site/blog-filters";
+import { JsonLd, breadcrumb } from "@/components/seo/json-ld";
+import { SITE_URL } from "@/lib/site";
 import { formatDate } from "@/lib/utils";
 
 // Rebuild from the CMS at most every 10 minutes (ISR), so content edits in
 // the admin go live without a manual redeploy.
 export const revalidate = 600;
 
+const description = "What we shipped, what broke, what we're reading.";
+
 export const metadata = {
   title: "Field notes",
-  description: "What we shipped, what broke, what we're reading.",
+  description,
   alternates: { canonical: "/blog" },
+  openGraph: { title: "Field notes · Trellee", description, url: "/blog" },
+  twitter: { title: "Field notes · Trellee", description },
 };
 
 export default async function BlogPage() {
@@ -37,6 +43,11 @@ export default async function BlogPage() {
   );
   const visibleCategories = categories.filter((c) => usedCategoryIds.has(c.id));
 
+  const crumbs = breadcrumb(SITE_URL, [
+    { name: "Home", path: "/" },
+    { name: "Field notes", path: "/blog" },
+  ]);
+
   const posts = allPosts;
   const featured = posts.find((p) => p.featured) ?? posts[0];
   const rest = posts.filter((p) => p.id !== featured?.id);
@@ -46,6 +57,7 @@ export default async function BlogPage() {
 
   return (
     <>
+      <JsonLd data={crumbs} />
       <section className="relative pt-16 pb-12 lg:pt-24 lg:pb-16 overflow-hidden">
         <div className="mesh" />
         <div className="relative max-w-[1280px] mx-auto px-6 lg:px-10">
