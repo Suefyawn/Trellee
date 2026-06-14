@@ -56,8 +56,40 @@ export default async function SiteLayout({
       settings.tagline ??
       "Full-stack digital agency: brand, web, mobile, CRMs, AI, and growth, from one team.",
     ...(settings.email ? { email: settings.email } : {}),
-    ...(settings.city
-      ? { areaServed: { "@type": "City", name: settings.city } }
+    // Service-area business (no public storefront/phone): global reach,
+    // primarily the US — Los Angeles and Miami.
+    areaServed: [
+      { "@type": "Country", name: "United States" },
+      { "@type": "City", name: "Los Angeles" },
+      { "@type": "City", name: "Miami" },
+      { "@type": "Place", name: "Europe" },
+      { "@type": "Place", name: "Middle East" },
+    ],
+    // Available 24/7.
+    openingHoursSpecification: {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+      ],
+      opens: "00:00",
+      closes: "23:59",
+    },
+    ...(settings.email
+      ? {
+          contactPoint: {
+            "@type": "ContactPoint",
+            contactType: "customer support",
+            email: settings.email,
+            availableLanguage: "English",
+            areaServed: "Worldwide",
+          },
+        }
       : {}),
     sameAs: social.map((s) => s.url),
     ...(aggregateRating ? { aggregateRating } : {}),
