@@ -1,10 +1,15 @@
 import { getServices, getSiteSettings } from "@/lib/cms";
 import { BookingFlow } from "@/components/site/booking-flow";
 
+const description =
+  "30 minutes. No slides. Bring the problem, we'll bring the questions.";
+
 export const metadata = {
   title: "Book a discovery call",
-  description: "30 minutes. No slides. Bring the problem, we'll bring the questions.",
+  description,
   alternates: { canonical: "/book" },
+  openGraph: { title: "Book a discovery call · Trellee", description, url: "/book" },
+  twitter: { title: "Book a discovery call · Trellee", description },
 };
 
 export default async function BookPage({

@@ -3,15 +3,21 @@ import { getFAQs, getServices, getSiteSettings } from "@/lib/cms";
 import { Reveal } from "@/components/site/reveal";
 import { ContactForm } from "@/components/site/contact-form";
 import { FAQAccordion } from "@/components/site/faq-accordion";
+import { JsonLd, breadcrumb } from "@/components/seo/json-ld";
+import { SITE_URL } from "@/lib/site";
 
 // Contact reads only CMS data (settings/services/FAQs), so it can be ISR-cached
 // like the rest of the site instead of rendering dynamically on every request.
 export const revalidate = 600;
 
+const description = "Send a brief or book a call. We read every message.";
+
 export const metadata = {
   title: "Contact",
-  description: "Send a brief or book a call. We read every message.",
+  description,
   alternates: { canonical: "/contact" },
+  openGraph: { title: "Contact Trellee", description, url: "/contact" },
+  twitter: { title: "Contact Trellee", description },
 };
 
 export default async function ContactPage() {
@@ -21,8 +27,26 @@ export default async function ContactPage() {
     getFAQs({ category: "general" }),
   ]);
 
+  const faqSchema =
+    faqs.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqs.map((f) => ({
+            "@type": "Question",
+            name: f.question,
+            acceptedAnswer: { "@type": "Answer", text: f.answer },
+          })),
+        }
+      : null;
+  const crumbs = breadcrumb(SITE_URL, [
+    { name: "Home", path: "/" },
+    { name: "Contact", path: "/contact" },
+  ]);
+
   return (
     <>
+      <JsonLd data={faqSchema ? [faqSchema, crumbs] : [crumbs]} />
       <section className="relative pt-16 pb-12 lg:pt-24 lg:pb-16 overflow-hidden">
         <div className="mesh" />
         <div className="relative max-w-[1280px] mx-auto px-6 lg:px-10">

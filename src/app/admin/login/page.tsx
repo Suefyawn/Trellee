@@ -5,7 +5,10 @@ import { Logo } from "@/components/site/logo";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { safeNextPath } from "@/lib/utils";
 
-export const metadata = { title: "Admin login" };
+export const metadata = {
+  title: "Admin login",
+  robots: { index: false, follow: false },
+};
 
 function isSupabaseConfigured() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

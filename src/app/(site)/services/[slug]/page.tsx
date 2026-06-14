@@ -13,6 +13,7 @@ import { Reveal } from "@/components/site/reveal";
 import { ServiceIcon } from "@/components/site/service-icon";
 import { FAQAccordion } from "@/components/site/faq-accordion";
 import { JsonLd, breadcrumb } from "@/components/seo/json-ld";
+import { SITE_URL } from "@/lib/site";
 
 // Rebuild from the CMS at most every 10 minutes (ISR), so content edits in
 // the admin go live without a manual redeploy.
@@ -56,8 +57,7 @@ export default async function ServiceDetailPage({
 
   const featuredProject = relatedProjects[0];
 
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://trellee.vercel.app";
+  const siteUrl = SITE_URL;
   const serviceSchema = {
     "@context": "https://schema.org",
     "@type": "Service",

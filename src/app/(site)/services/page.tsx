@@ -3,7 +3,7 @@ import { ArrowUpRight } from "lucide-react";
 import { getServices } from "@/lib/cms";
 import { Reveal } from "@/components/site/reveal";
 import { ServiceIcon } from "@/components/site/service-icon";
-import { JsonLd } from "@/components/seo/json-ld";
+import { JsonLd, breadcrumb } from "@/components/seo/json-ld";
 import { SITE_URL } from "@/lib/site";
 
 // Rebuild from the CMS at most every 10 minutes (ISR), so content edits in
@@ -15,6 +15,16 @@ export const metadata = {
   description:
     "Ten disciplines, one team. Brand, web, mobile, CRMs, AI, SEO, ads, lead gen, marketing, scraping.",
   alternates: { canonical: "/services" },
+  openGraph: {
+    title: "Services · Trellee",
+    description:
+      "Ten disciplines, one team. Brand, web, mobile, CRMs, AI, SEO, ads, lead gen, marketing, scraping.",
+    url: "/services",
+  },
+  twitter: {
+    title: "Services · Trellee",
+    description: "Ten disciplines, one team — from brand to code to growth.",
+  },
 };
 
 export default async function ServicesPage() {
@@ -39,6 +49,7 @@ export default async function ServicesPage() {
       item: {
         "@type": "Service",
         name: s.title,
+        ...(s.category ? { serviceType: s.category } : {}),
         ...(s.summary ? { description: s.summary } : {}),
         url: `${siteUrl}/services/${s.slug}`,
         provider: { "@type": "Organization", name: "Trellee", url: siteUrl },
@@ -46,9 +57,14 @@ export default async function ServicesPage() {
     })),
   };
 
+  const crumbs = breadcrumb(SITE_URL, [
+    { name: "Home", path: "/" },
+    { name: "Services", path: "/services" },
+  ]);
+
   return (
     <>
-      <JsonLd data={itemList} />
+      <JsonLd data={[itemList, crumbs]} />
       <section className="relative pt-16 pb-12 lg:pt-24 lg:pb-16 overflow-hidden">
         <div className="mesh" />
         <div className="relative max-w-[1280px] mx-auto px-6 lg:px-10">

@@ -1,6 +1,9 @@
 import { AdminShell } from "@/components/admin/admin-shell";
 import { requireOwner } from "@/app/admin/_actions/guard";
 
+// Belt-and-suspenders with robots.txt: never index any admin page.
+export const metadata = { robots: { index: false, follow: false } };
+
 export default async function AdminShellLayout({
   children,
 }: {
