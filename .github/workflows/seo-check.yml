@@ -1,0 +1,23 @@
+name: SEO health check
+
+# Runs against the LIVE site weekly to catch SEO regressions (broken pages,
+# missing meta/canonical, invalid structured data, dead sitemap URLs). A failure
+# surfaces in the Actions tab and emails the repo owner. Also runnable on demand.
+on:
+  schedule:
+    - cron: "0 13 * * 1" # Mondays 13:00 UTC
+  workflow_dispatch:
+
+jobs:
+  seo:
+    name: Validate production SEO
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run SEO health check
+        run: node scripts/seo-check.mjs
+        env:
+          SITE_URL: https://trellee.com
